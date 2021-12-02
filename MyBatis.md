@@ -586,3 +586,260 @@ mapper.Mapper = tk.mybatis.mapper.common.Mapper
         </plugins>
     </build>
 ```
+
+## 复杂查询
+
+### 多对一：
+
+学生多对一
+
+如每个Student 都有一个teacher
+
+```
+方式一：通过子查询进行查询
+思路：
+    1.查询所有的学生信息
+    2.根据查询出来的学生的tid，寻找对应的老师！
+复杂的属性，我们需要单独处理
+     对象：association
+     集合：collection
+```
+
+```xml
+<select id="getAllStudent" resultMap="StudentAndTeacher">
+        select * from student;
+    </select>
+    <resultMap id="StudentAndTeacher" type="Student">
+        <association property="teacher" column="tid" javaType="Teacher" select="getTeacherById"/>
+    </resultMap>
+    <select id="getTeacherById" resultType="Teacher">
+        select * from teacher where id = #{tid};
+    </select>
+<!--方式二：按照结果嵌套处理-->
+    <resultMap id="StudentTeacher2" type="Student">
+        <result property="id" column="sid"/>
+        <result property="name" column="sname"/>
+        <association property="teacher" javaType="Teacher">
+            <result property="name" column="tname"/>
+        </association>
+    </resultMap>
+<!--    <resultMap id="StudentTeacher2" type="Student">-->
+<!--        <result property="id" column="sid"/>-->
+<!--        <result property="name" column="sname"/>-->
+<!--        <association property="teacher" column="tid" javaType="Teacher" select="getTeacherById"/>-->
+<!--    </resultMap>-->
+```
+
+### 一对多：
+
+如一个Teacher里有LIst<Student>
+
+方法一：嵌套查询
+
+```xml
+<select id="getTeacherStudents2" resultMap="TeacherDeStudents2">
+    select  * from teacher where id = #{tid};
+</select>
+
+<resultMap id="TeacherDeStudents2" type="Teacher">
+    <result property="id" column="id"/>
+    <collection property="students" javaType="ArrayList" ofType="Student" column="id" select="getStudentByTid"/>
+</resultMap>
+
+<select id="getStudentByTid" resultType="Student">
+    select * from student where tid=#{id};
+</select>
+```
+
+方法二：结果查询,更快
+
+```xml
+<select id="getTeacherStudents" resultMap="TeacherDeStudents">
+    select s.id sid,s.name sname,s.tid tid,t.name tname from student s,teacher t where s.tid=#{tid} and t.id=s.tid;
+</select>
+
+<resultMap id="TeacherDeStudents" type="Teacher">
+    <result property="id" column="tid"/>
+    <result property="name" column="tname"/>
+    <collection property="students" ofType="Student">
+        <result property="id" column="sid"/>
+        <result property="name" column="sname"/>
+    </collection>
+</resultMap>
+```
+
+association:对象 
+
+<association property="teacher" column="tid" javaType="Teacher" select="getTeacherById"/>
+
+javaType实体类的类型
+
+collection集合 List
+
+<collection property="students" javaType="ArrayList" ofType="Student" column="id" select="getStudentByTid"/>
+
+ofType:集合中的类型List<这里>
+
+面试必问：
+
+- Mysql引擎
+- InnoDB底层原理
+- 索引
+- 索引优化
+
+## 动态SQL
+
+动态sql根据不同条件生成不同的sql语句
+
+### 搭建环境
+
+UUID，不推荐用
+
+```java
+package com.lgd.utils;
+
+import java.util.UUID;
+
+@SuppressWarnings("all")
+public class IdUtils {
+    public static String getId() {
+        return UUID.randomUUID().toString().replace("-","");
+    }
+}
+```
+
+### IF
+
+```xml
+<select id="getBlogIF" parameterType="map" resultType="blog">
+    select * from blog where 1 = 1
+    <if test="title != null">
+        and title = #{title}
+    </if>
+    <if test="views!= null">
+        and views = #{views}
+    </if>
+</select>
+```
+
+Map中put了啥加啥，没有东西就全查
+
+其中if的模块可以用sql Id拼接
+
+```xml
+<include refid="if-title-author"></include>
+
+<sql id="if-title-author">
+    <if test="title != null">
+        and title = #{title}
+    </if>
+    <if test="views!= null">
+        and views = #{views}
+    </if>
+</sql>
+```
+
+### Choose , when , otherwise
+
+类似于java中的switch语句，选择一个执行
+
+```xml
+<select id="getBlogChoose" parameterType="map" resultType="blog">
+    select * from blog
+    <where>
+        <choose>
+            <when test="title != null">
+                title = #{title}
+            </when>
+            <when test="views!=null">
+                views = #{views}
+            </when>
+            <otherwise>
+                1 = 1
+            </otherwise>
+        </choose>
+    </where>
+</select>
+```
+
+### updata之SET
+
+它可以帮你删除一些会造成sql语句错误的“，”
+
+### trim
+
+
+
+### Foreach
+
+```xml
+<select id="getBlogForeach" parameterType="map" resultType="blog">
+    select * from blog
+    <where>
+        <foreach collection="ids" item="id" open="(" close=")" separator="or">
+            id = #{id}
+        </foreach>
+    </where>
+</select>
+```
+
+## 缓存
+
+### 什么是缓存？
+
+- 存在于内存中的经常访问但基本不改变的数据
+- 将用户经常访问的数据放在其中，这样访问的时候关系型数据库就不用到磁盘里去读而是到内存中读，增加查询效率，高并发
+
+Mybatis可以定制和配置缓存，它有两级缓存，一级和二级
+
+- 默认情况下就SqlSession级别的缓存，（本地缓存，一级缓存）
+- 二级缓存需要手动开启，基于namespace级别，一个mapper
+- 提高扩展性，配置Cache
+
+### 清除策略：
+
+LRU-最近最少使用
+
+FIFO-先进先出
+
+SOFT-软引用，基于垃圾回收器状态
+
+Weak-弱引用，更积极基于垃圾收集器状态
+
+默认LRU 
+
+### 缓存失效：
+
+- 增删改完会刷新缓存，因为增删改可能会改变原来的数据，为了数据一致性，刷新缓存
+- 查询不同的东西
+- 通过不同的Mapper.xml查询
+- 手动清除缓存sqlSession.clearCache();
+
+小结：一级缓存默认开启，只在一次SQLSESSION中有效，只在一次开启到关闭中有用
+
+比如你用户一直刷新一个东西要取的时候可以用到
+
+### 开启二级缓存
+
+- 开启全局变量，cacheEnabled=True
+- <cache
+
+​	eviction="FIFO"
+
+​	flushInterval="60000"
+
+​	size="512"
+
+​	readOnly="true"/>
+
+### 二级缓存机制：
+
+- 二级缓存作用域为namespace,一个mapper
+- 当一个会话关闭，这个会话的一级缓存就没了，但是我们想要的数据会被存到二级缓存中
+- 新会话查询可以到二级缓存中获取内容
+- 不同mapper查到的数据会放到自己的对应缓存map中
+
+
+
+
+

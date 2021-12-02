@@ -68,3 +68,49 @@ str(i).count('4')>0 //boolean
 str(p).rjust(6) //从右边开始补，一共6位
 ```
 
+```python
+a = list(map(int,input().split()))
+```
+
+a.append('hello')
+
+//[0,1,'hello']
+
+a.extend('hello')
+
+//[0,1,'h','e','l','l','o']
+
+remove
+
+pop
+
+clear
+
+print(*x)
+
+//30 7 0 85 95
+
+s = max(a)
+
+a.remove(s)
+
+print(f'\n最终得分: {sum(a) / len(a):.2f}')
+
+b = a.copy()
+
+a.reverse()//倒转数组
+
+t[::-1]//反向输出
+
+```python
+x = [i*2 for i in [1,2,3,4]]
+[2,4,6,8]
+
+
+x = [random.randint(10,99) for i in range(10) if i%2==0]
+x.sort(reverse = True)
+print(*x)
+```
+
+[i**2 for i in range(10) if i%2 == 0]
+
