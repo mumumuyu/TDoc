@@ -173,3 +173,28 @@ layui.use(['layedit', 'layer', 'jquery'], function () {
             });
 ```
 
+##### 字段中显示图片：
+
+字段设置
+,{field: 'pic', title: '图片', width: 150,templet:'<div><img src="{{ d.pic}}"></div>'}
+你可以在字段设置里加style:"height:150px;"自定义样式。
+例如：
+{field: 'username', title: '用户名', width:80,style:'height:100px;'}
+,{field: 'sex', title: '性别', width:80, sort: true,style:'height:100px;'}
+
+针对图片（设置图片宽度高度）
+
+{
+field : 'picurl',
+title : '课程图片',
+width : '10%',
+sort : true,
+style:'height:100px;',
+templet: '#picurl'
+}
+其中，在添加css样式
+
+.laytable-cell-1-picurl{  /*最后的pic为字段的field*/
+       height: 100%;
+       max-width: 100%;
+   }

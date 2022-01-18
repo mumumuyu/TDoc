@@ -48,6 +48,13 @@ spring-boot-autoconfigure-2.2.0.RELEASE.jar ，整合javaEE
 
 Spring-Boot-DevTools 热部署
 
+**Spring Boot的主要优点：**
+
+- 为所有Spring开发者更快的入门
+- **开箱即用**，提供各种默认配置来简化项目配置
+- 内嵌式容器简化Web项目
+- 没有冗余代码生成和XML配置的要求
+
 ### YML
 
 #### yml配置优先级顺序
@@ -85,6 +92,26 @@ Spring-Boot-DevTools 热部署
 - crud
 - 拦截器
 - 国际化（中英文切换）
+
+#### @PathVariable，@RequestParam，@RequestBody三者比较
+
+```java
+注解 	支持的类型 	支持的请求类型 	支持的Content-Type 	请求示例
+
+@PathVariable 	url 	GET 	所有 	/test/{id}
+@RequestParam 	url 	GET 	所有 	/test?id=1
+                Body 	POST/PUT/DELETE/PATCH 	form-data或x-www.form-urlencoded 	id:1
+@RequestBody 	Body 	POST/PUT/DELETE/PATCH 	json 	{"id":1}
+
+将接口改成以@RequestBody注解方式接受json请求数据，而后将接收到的json数据转化为json对象，可以使用json对象的get()方法取得参数值，代码如下：
+
+@PostMapping("/account")
+public Object insertAccount(@RequestBody JSONObject jsonParam) {
+	String userName=jsonParam.get("userName").toString()
+	...
+```
+
+
 
 #### 静态资源如何导入？
 
@@ -746,3 +773,19 @@ npm镜像配置：
 
 $ npm config set registry https://registry.npm.taobao.org 
 $ npm info underscore （如果上面配置正确这个命令会有字符串response）
+
+
+
+##### springboot读取resources文件夹下边的文件
+
+```java 
+//第一种方法
+File file =  ResourceUtils.getFile("classpath:template/科研项目模板.xlsx");
+//获取文件的相对路径  可在控制台打印查看输出结果
+String filePath = ResourceUtils.getFile("classpath:template/科研项目模板.xlsx").getPath();
+//第二种方法
+//直接将目标文件读成inputstream  this指当前类的实例对象
+InputStream ins = this.getClass().getClassLoader().getResourceAsStream("template/科研项目模板.xlsx");
+File file = new File(ins);
+```
+

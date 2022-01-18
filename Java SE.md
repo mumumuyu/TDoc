@@ -1,5 +1,36 @@
 # Java SE
 
+javadoc -encoding utf-8 -charset utf-8 Test.java
+
+可产生说明文档
+
+<<带符号位移动，+-不变
+
+<<<不带符号位移动，可能变
+
+&与 |或 ^异 ~取反
+
+‘\u0041’
+
+常用类如:Object,Date,String,Math,Random,File等
+
+集合框架：大类Collection , Map
+
+Collection
+
+- List
+  - ArrayList
+  - LinkedList
+- Set
+  - TreeSet
+  - HashSet
+- Map
+  - HashMap
+  - TreeMap
+  - LinkedHashMap
+
+
+
 ### 1.数据类型
 
 ##### 基本数据类型：
