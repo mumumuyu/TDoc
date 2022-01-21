@@ -1,0 +1,60 @@
+spring:
+  profiles:
+    active: dev
+---
+server:
+  port: 8001
+
+#mybatis配置
+mybatis:
+  type-aliases-package: com.lgd.pojo
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml
+#spring的配置
+spring:
+  profiles: dev
+  application:
+    name: springcloud-procider-dept-8001-dev
+  datasource :
+#    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class -name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cloud-test?useUnicode=true&characterEncoding=utf-8
+    username : root
+    password: 1328910
+
+# Eureka配置：配置服务注册中心地址
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+  instance:
+    instance-id: springcloud-provider-dept-8001
+
+---
+server:
+  port: 8001
+
+#mybatis配置
+mybatis:
+  type-aliases-package: com.lgd.pojo
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml
+#spring的配置
+spring:
+  profiles: test
+  application:
+    name: springcloud-procider-dept-8001-test
+  datasource :
+#    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class -name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/cloud-test2?useUnicode=true&characterEncoding=utf-8
+    username : root
+    password: 1328910
+
+# Eureka配置：配置服务注册中心地址
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka7001.com:7001/eureka/,http://eureka7002.com:7002/eureka/,http://eureka7003.com:7003/eureka/
+  instance:
+    instance-id: springcloud-provider-dept-8001
