@@ -111,7 +111,7 @@ Class c = Class.forName("java.lang.String")
 
 一个类在内存中只有一个Class对象，一个类被加载后，整个结构都被封装在Class对象中
 
-![image-20220304131827913](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220304131827913.png)
+![image-20220304131827913](./pic/image-20220304131827913.png)
 
 ### Class类
 
@@ -138,7 +138,7 @@ Class c = Class.forName("java.lang.String")
 - xxx.getClass();
 - Class.getForName("xxx.xx.xx")
 
-![image-20220304144421000](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220304144421000.png)
+![image-20220304131827913](./pic/image-20220304144421000)
 
 #### 哪些类型有Class对象
 
@@ -150,7 +150,7 @@ Class c = Class.forName("java.lang.String")
 - primitive type:基本数据类型
 - void
 
-![image-20220304145412081](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220304145412081.png)
+![image-20220304145412081](./pic/image-20220304145412081.png)
 
 只要元素类型与维度一样，就是同一个Class
 
@@ -198,7 +198,7 @@ jvm负责对类进行初始化
 
 - 访问一个静态域时，需要先声明这个域的类（比如通过子类访问父类的静态变量，不会导致子类初始化）
 
-  ![image-20220304184453577](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220304184453577.png)
+  ![image-20220304184453577](./pic/image-20220304184453577.png)
 
 - 引用常量不会触发（常量在链接link时就存入调用类的常量池中）
 
@@ -210,7 +210,7 @@ jvm负责对类进行初始化
 - 扩展类加载器：jre/lib/ext
 - 系统类加载器：最常用
 
-![image-20220304185107232](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220304185107232.png)
+![image-20220304185107232](./pic/image-20220304185107232.png)
 
 双亲委派机制——一层一层向上找如果根加载jar包里有，他会用原来的而不会用你的包以保证核心类不被破坏
 
