@@ -218,3 +218,216 @@ jvm负责对类进行初始化
 
 类缓存：一旦某个类被加载到类加载器中，他会缓存一段时间，JVM回收机制可以回收这些Class对象
 
+#### 获取运行时类的完整结构
+
+- Field（变量）
+- Method（方法）
+- Constructor（构造器）
+- Superclass（父类）
+- Interface（接口）
+- Annotation（注解）
+
+```java
+getDeclaredFields()//获取类的所有属性
+getFields()//只能获取Public属性
+getDeclaredMethods();//获取类的所有方法
+getMethods();//获取类的所有public方法
+getDeclaredConstructors()//获取类的所有构造方法，其余同理
+Son lgd = Son.class.getDeclaredConstructor(String.class).newInstance("lgd");//获取Son的Class对象的构造器
+```
+
+invoke: 激活
+
+(对象，方法的值)
+
+```java
+        Class c1 = Class.forName("example.Son");
+
+        Son lgd = (Son) c1.getDeclaredConstructor(String.class).newInstance("lgd");
+        System.out.println(lgd);
+
+        //反射获取类的方法并进行操作
+        Son son = Son.class.newInstance();
+        Method setName = Son.class.getDeclaredMethod("setName", String.class);
+        setName.invoke(son,"lgd2");
+        System.out.println(son);
+        
+        //反射获取类的成员变量并进行操作
+        Son son1 = (Son) c1.newInstance();
+        Field name = c1.getDeclaredField("name");
+        name.setAccessible(true);//关掉权限
+        name.set(son1,"lgdaaa");
+        System.out.println(son1);
+```
+
+#### newInstance()
+
+注意，使用对象的newInstance();方法时注意类必须要有无参构造。因为，调用Class对象的newInstance()方法时，类必须要有一个无参构造器，且访问权限要足。
+
+若没有无参构造器，就是用getDeclaredConstructor(Class .. paramterTypes)使用指定形参类型的构造器
+
+setAccessible可以关闭权限检查，这个时候private的属性也可以被我们直接改
+
+####  反射使用效率
+
+```java
+void Test1(){
+        Son lgd = new Son("lgd");
+        long starttime = System.currentTimeMillis();
+
+        for (int i = 0; i < 1000000000; i++) {
+            lgd.getName();
+        }
+
+        long endtime = System.currentTimeMillis();
+        System.out.println("正常"+(endtime-starttime));
+    }
+    void Test2() throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        Son son = Son.class.newInstance();
+        Method setName = Son.class.getDeclaredMethod("setName", String.class);
+        Method getName = Son.class.getDeclaredMethod("getName");
+        getName.setAccessible(true);
+        setName.invoke(son,"lgd");
+        long starttime = System.currentTimeMillis();
+
+        for (int i = 0; i < 1000000000; i++) {
+            getName.invoke(son);
+        }
+
+        long endtime = System.currentTimeMillis();
+        System.out.println("正常"+(endtime-starttime));
+    }
+```
+
+![image-20220305134823191](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220305134823191.png)
+
+显然，普通操作比使用反射(关闭验证权限)再操作的效率快了约200倍，所以不要什么都用反射.
+
+#### 泛型
+
+ 获取泛型的相关信息
+
+```java
+Method test1 = Generic_Ref.class.getMethod("test1", Map.class, List.class);
+
+        Type[] genericParameterTypes = test1.getGenericParameterTypes();
+        for(Type generic: genericParameterTypes) {
+            System.out.println("@" + generic);
+            if(generic instanceof ParameterizedType){
+                Type[] actualTypeArguments = ((ParameterizedType) generic).getActualTypeArguments();
+                for (Type typeargu:actualTypeArguments) {
+                    System.out.println(typeargu);
+                }
+            }
+        }
+
+        Method test2 = Generic_Ref.class.getMethod("test2");
+        Type genericReturnType = test2.getGenericReturnType();
+        if(genericReturnType instanceof ParameterizedType){
+            Type[] actualTypeArguments = ((ParameterizedType) genericReturnType).getActualTypeArguments();
+            for (Type typeargu:actualTypeArguments) {
+                System.out.println(typeargu);
+            }
+        }
+```
+
+![image-20220305141313593](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220305141313593.png)
+
+先获取泛型（形参还是返回值），然后判断它是不是一个参数化类型，是的话强转为参数化类型获取它真实的参数类型
+
+#### 反射操作注解
+
+ORM：对象关系映射
+
+- 类与表结构对应
+- 属性与字段对应
+- 对象与记录对应
+
+```java
+Class c1 = Studenta.class;
+        //通过反射获取注解
+        Annotation[] annotations = c1.getAnnotations();
+        for (Annotation annotation : annotations) {
+            System.out.println(annotation);
+        }
+
+        //获取注解的value
+        TableLGD tableLGD = (TableLGD) c1.getAnnotation(TableLGD.class);
+        String value = tableLGD.value();
+        System.out.println(value);
+
+        //获取类指定注解
+        Field name = c1.getDeclaredField("name");
+        FieldLGD fieldLGD = name.getAnnotation(FieldLGD.class);
+        System.out.println(fieldLGD.columnName());
+        System.out.println(fieldLGD.length());
+        System.out.println(fieldLGD.type());
+
+@TableLGD("db_studenta")
+class Studenta{
+    @FieldLGD(columnName = "db_id",type = "int",length = 10)
+    private int id;
+    @FieldLGD(columnName = "db_age",type = "int",length = 10)
+    private int age;
+    @FieldLGD(columnName = "db_name",type = "verchar",length = 3)
+    private String name;
+
+    public Studenta() {
+    }
+
+    public Studenta(int id, int age, String name) {
+        this.id = id;
+        this.age = age;
+        this.name = name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return "Studenta{" +
+                "id=" + id +
+                ", age=" + age +
+                ", name='" + name + '\'' +
+                '}';
+    }
+}
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@interface TableLGD{
+    String value();
+}
+
+//属性注解
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@interface FieldLGD{
+    String columnName();
+    String type();
+    int length();
+}
+```
+
