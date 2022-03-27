@@ -356,3 +356,231 @@ Vue核心就是数据驱动，组件化
 
 Vue的开发都基于NodeJS,实际开发采用Vue-cli脚手架开发，Vue-router路由，vuex做状态管理；Vue UI，界面我们一般使用ElementUI,ICE来快速搭建
 
+### Vue-cli
+
+```
+Project name：项目名称，默认回车即可
+Project description：项目描述，默认回车即可
+Author：项目作者，默认回车即可
+Install vue-router：是否安装vue-router，选择n不安装（后期需要再手动添加）
+Use ESLint to lint your code:是否使用ESLint做代码检查，选择n不安装（后期需要再手动添加)
+Set up unit tests:单元测试相关，选择n不安装（后期需要再手动添加）
+Setupe2etests with Nightwatch：单元测试相关，选择n不安装（后期需要再手动添加）
+Should we run npm install for you after the,project has been created:创建完成后直接初始化，选择n，我们手动执行；运行结果
+```
+
+
+
+```
+npm config set registry https://registry.npm.taobao.org
+npm config get registry
+
+npm install cnpm-g
+cnpm install vue-cli -g
+vue list
+
+vue init webpack myvue
+
+npm install vue-router --save-dev
+
+npm i element-ui -S
+
+cnpm install sass-loader node-sass --save-dev
+
+```
+
+```
+npm install moduleName // 安装模块到项目目录下
+npm install -g moduleName //全局
+npm install --save moduleName //save：安装到项目目录并在package的dependencies节点写入依赖 -S为缩写
+npm install --save-dev moduleName: devDependencies写入依赖，-D为缩写
+```
+
+
+
+类似于Maven的脚手架
+
+npm install
+
+npm run dev
+
+模块化开发：
+
+一个js文件可以通过
+
+var xxx = require("./xxx.js");
+
+xxx.xxxx();
+
+#### webpack
+
+通过
+
+```
+cnpm webpack install//进行下载
+cnpm webpack-cli install
+cnpm webpack-dev-server
+
+cnpm webpack -v //测试版本
+```
+
+webpack.config.js 配置文件
+
+- entry：入口
+- output：输出文件
+- module: 模块，处理各种类型文件
+- plugins: 插件，热更新，代码重用等
+- resolve: 设置路径庄子乡
+- watch: 监听，设置文件改动后直接打包，热部署
+
+
+
+比如如下简单例子
+
+```javascript
+//暴露一个方法出来
+exports.sayhi = function () {
+    document.write("<h1>Hello~ LGD </h1>")
+}
+exports.sayhi2 = function () {
+    document.write("<h1>Hello~ LGD </h1>")
+}
+exports.sayhi3 = function () {
+    document.write("<h1>Hello~ LGD </h1>")
+}
+exports.sayhi4 = function () {
+    document.write("<h1>Hello~ LGD </h1>")
+}
+//main.js
+var hello = require("./hello");
+hello.sayhi();
+hello.sayhi2();
+hello.sayhi3();
+hello.sayhi4();
+//webpack.config.js：配置
+module.exports = {
+    entry: {
+        app: './modules/main.js'
+    },
+    output: {
+        filename: './output/bundle.js'
+    }
+}
+```
+
+输出效果
+
+![image-20220326105756387](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220326105756387.png)
+
+### vue-router路由
+
+Vue专注于视图
+
+```
+cnpm install vue-router@x.x.x --save-dev
+```
+
+类似于打成jar包？
+
+```vue
+import mycontext from './components/context.vue'
+//我简单导入一个我写的组件,然后使用直接在别人的
+<template>
+	<mycontext/>
+</template>
+//即可使用
+至于创建，只需要用create(xxx).mount('#xxx')
+//不错，我好像明白了，还是HbuildX行！
+```
+
+路由用于跳转页面
+
+写好一个router的配置
+
+```javascript
+//导入路由方法
+import { createRouter, createWebHistory } from 'vue-router'
+//导入组件
+// 1. 定义路由组件.
+// 也可以从其他文件导入
+const Home = { template: '<div>Home</div>' }
+const About = { template: '<div>About</div>' }
+//路由规则
+const routes = [
+  { path: '/', component: Home },
+  { path: '/about', component: About }
+]
+//路由创建
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+export default router
+
+//main.js
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+
+createApp(App).use(router).mount('#app')
+
+//使用
+<div class="nav">
+    <!--使用 router-link 组件进行导航 -->
+    <!--通过传递 `to` 来指定链接 -->
+    <!--`<router-link>` 将呈现一个带有正确 `href` 属性的 `<a>` 标签-->
+    <router-link to="/">首页</router-link> |
+    <router-link to="/about">关于</router-link>
+</div>
+    <hr width="100%">
+  <!-- 路由出口 -->
+  <!-- 路由匹配到的组件将渲染在这里 -->
+<router-view></router-view>
+```
+
+### 整合ElementUI
+
+```
+vue init webpack myvue
+
+npm install vue-router --save-dev
+
+npm i element-ui -S
+
+cnpm install sass-loader node-sass --save-dev
+```
+
+简单使用//全局(Vue2)
+
+https://element.eleme.cn/#/zh-CN
+
+```
+import 'element-ui/lib/theme-chalk/index.css';
+Vue.use(Element, { size: 'small', zIndex: 3000 });
+```
+
+```javascript
+<template>
+  <div id="app">
+    <img src="./assets/logo.png">
+    <fadetest/>
+    <HelloWorld/>
+  </div>
+</template>
+
+<script>
+import HelloWorld from './components/HelloWorld'
+import fadetest from './components/fadetest.vue'
+
+export default {
+  name: 'App',
+  components: {
+    HelloWorld,
+    fadetest
+  }
+}
+</script>
+//直接嫖人家组件用，舒舒服服
+```
+
+这版本，太痛苦了，换jvm 😡
