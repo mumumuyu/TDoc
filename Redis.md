@@ -243,6 +243,399 @@ cpu>内存频率>硬盘
 
 核心：redis将所有数据都放在内存中，所以使用单线程操作没问题
 
+多线程是为了提高资源利用率，在涉及磁盘操作时，CPU会有很多时间阻塞到IO，采用多线程可以利用阻塞的时间
+
+### 五大数据类型
+
+>Redis 是一个开源（BSD许可）的，内存中的数据结构存储系统，它可以用作数据库、缓存和消息中间件。 它支持多种类型的数据结构，如 [字符串（strings）](http://redis.cn/topics/data-types-intro.html#strings)， [散列（hashes）](http://redis.cn/topics/data-types-intro.html#hashes)， [列表（lists）](http://redis.cn/topics/data-types-intro.html#lists)， [集合（sets）](http://redis.cn/topics/data-types-intro.html#sets)， [有序集合（sorted sets）](http://redis.cn/topics/data-types-intro.html#sorted-sets) 与范围查询， [bitmaps](http://redis.cn/topics/data-types-intro.html#bitmaps)， [hyperloglogs](http://redis.cn/topics/data-types-intro.html#hyperloglogs) 和 [地理空间（geospatial）](http://redis.cn/commands/geoadd.html) 索引半径查询。 Redis 内置了 [复制（replication）](http://redis.cn/topics/replication.html)，[LUA脚本（Lua scripting）](http://redis.cn/commands/eval.html)， [LRU驱动事件（LRU eviction）](http://redis.cn/topics/lru-cache.html)，[事务（transactions）](http://redis.cn/topics/transactions.html) 和不同级别的 [磁盘持久化（persistence）](http://redis.cn/topics/persistence.html)， 并通过 [Redis哨兵（Sentinel）](http://redis.cn/topics/sentinel.html)和自动 [分区（Cluster）](http://redis.cn/topics/cluster-tutorial.html)提供高可用性（high availability）。
+
+单点登录
+
+#### **Redis-Key**
+
+```bash
+keys * //查看所有key
+set name lgd
+get name
+exists name
+expire name 10 //设置过期时间10s
+ttl name //查看剩余时间
+del name //删除
+move name 1 // 移动1到数据库1
+```
+
+#### **Strin**g
+
+字符操作
+
+```bash
+127.0.0.1:6379> set age 13
+OK
+127.0.0.1:6379> get age
+"13"
+#增加字符,若key不存在则创建一个key
+127.0.0.1:6379> append age 14
+(integer) 4
+127.0.0.1:6379> get age
+"1314"
+127.0.0.1:6379> exists age
+(integer) 1
+#获取字符长度
+127.0.0.1:6379> strlen age 
+(integer) 4
+127.0.0.1:6379> append age "lgd shuai~"
+(integer) 14
+127.0.0.1:6379> get age
+"1314lgd shuai~"
+```
+
+加减
+
+```bash
+127.0.0.1:6379> set age 1
+OK
+#增加1
+127.0.0.1:6379> incr age 
+(integer) 2
+127.0.0.1:6379> get age
+"2"
+#减1
+127.0.0.1:6379> decr age
+(integer) 1
+127.0.0.1:6379> get age
+"1"
+127.0.0.1:6379> incrby age 10
+(integer) 11
+127.0.0.1:6379> get age
+"11"
+127.0.0.1:6379> decrby age 5
+(integer) 6
+127.0.0.1:6379> get age
+"6"
+```
+
+字符串范围
+
+```bash
+127.0.0.1:6379> set name "hello"
+OK
+127.0.0.1:6379> getrange name 0 2 #截取字符串
+"hel"
+127.0.0.1:6379> getrange name 0 -1 #获取全部
+"hello"
+
+############################################
+#替换
+127.0.0.1:6379> set name lalala
+OK
+127.0.0.1:6379> setrange name 1 hoho
+(integer) 6
+127.0.0.1:6379> get name
+"lhohoa"
+############################################
+# setex(set with expire) #设置过期时间
+# setnx(set if not exist #不存在再设置)
+#设置name 为hello 过期时间30s
+127.0.0.1:6379> setex name 30 hello
+OK
+127.0.0.1:6379> setnx mykey "redis"
+(integer) 1
+127.0.0.1:6379> ttl name
+(integer) 10
+#如果存在mykey则创建失败
+127.0.0.1:6379> setnx mykey "mongoDB"
+(integer) 0
+127.0.0.1:6379> get mykey
+"redis"
+############################################
+#批量获取值,批量删除
+127.0.0.1:6379> mset k1 v1 k2 v2 k3 v3
+OK
+127.0.0.1:6379> key *
+(error) ERR unknown command `key`, with args beginning with: `*`, 
+127.0.0.1:6379> keys *
+1) "k3"
+2) "backup3"
+3) "k1"
+4) "backup2"
+5) "k2"
+6) "backup1"
+127.0.0.1:6379> del k1 k2 k3
+(integer) 3
+127.0.0.1:6379> keys *
+1) "backup3"
+2) "backup2"
+3) "backup1"
+127.0.0.1:6379[1]> mset k1 vv1 k2 vv2 k3 vv3
+OK
+127.0.0.1:6379[1]> mget k1 k2 k3
+1) "vv1"
+2) "vv2"
+3) "vv3"
+127.0.0.1:6379[1]> msetnx k1 v1 k4 v4
+(integer) 0
+#msetnv是原子性操作，要么全成功要么全失败，这里k1存在，所以不操作
+127.0.0.1:6379[1]> get k4
+(nil)
+############################################
+#批量操作m+xxx
+127.0.0.1:6379[1]> set user:1 {name:lgd,age:15}
+OK
+127.0.0.1:6379[1]> get user:1
+"{name:lgd,age:15}
+127.0.0.1:6379[1]> mset user:1:name lgd2 user:1:age 20
+OK
+127.0.0.1:6379[1]> mget user:1:name user:1:age
+1) "lgd2"
+2) "20"
+############################################
+#getset 先get旧值再set新值
+127.0.0.1:6379[1]> getset db redis
+(nil)
+127.0.0.1:6379[1]> get db
+"redis"
+127.0.0.1:6379[1]> getset db lgd
+"redis"
+127.0.0.1:6379[1]> getset db lgd2
+"lgd"
+```
+
+数据结构是相同的
+
+String类似的使用场景:value除了字符串还可以是数字
+
+- 计数器
+- 统计多单位的数目 id:110:follow 0
+- 对象缓存存储
+
+#### **List**
+
+是一种基本的数据类型，列表，可以重复
+
+在redis可以把list变成栈，队列，阻塞队列
+
+l开头意味着从左边操作，r开头意味着右边开始操作
+
+```bash
+127.0.0.1:6379[1]> lpush list one
+(integer) 1
+127.0.0.1:6379[1]> keys *
+1) "list"
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "one"
+127.0.0.1:6379[1]> lpush list tow
+(integer) 2
+127.0.0.1:6379[1]> lpush list three
+(integer) 3
+#获取list值，不过是从上往下的，是个栈
+127.0.0.1:6379[1]> lrange list 0 1
+1) "three"
+2) "tow"
+#获取所有list值
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "three"
+2) "tow"
+3) "one"
+
+127.0.0.1:6379[1]> lpush list 0
+(integer) 4
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "0"
+2) "three"
+3) "tow"
+4) "one"
+127.0.0.1:6379[1]> lrange list 0 0
+1) "0"
+#右边添加
+127.0.0.1:6379[1]> rpush list lalala
+(integer) 5
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "0"
+2) "three"
+3) "tow"
+4) "one"
+5) "lalala"
+#根据下标获取值
+127.0.0.1:6379[1]> lindex list 1
+"three"
+#获取长度
+127.0.0.1:6379[1]> llen list
+(integer) 5
+#移除list中1个元素为0的
+127.0.0.1:6379[1]> lrem list 1 0
+(integer) 1
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "three"
+2) "tow"
+3) "one"
+4) "lalala"
+############################################
+#trim 修建 
+#从左边开始，裁剪1开始截取2个，之后list就只剩下被裁剪的数据
+127.0.0.1:6379[1]> ltrim list 1 2
+OK
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "two"
+2) "one"
+############################################
+#组合命令 pop and rush，组合命令是原子性操作，并发时安全
+127.0.0.1:6379[1]> rpush list hello
+(integer) 1
+127.0.0.1:6379[1]> rpush list hello1
+(integer) 2
+127.0.0.1:6379[1]> rpush list hello2
+(integer) 3
+127.0.0.1:6379[1]> rpush list hello3
+(integer) 4
+#先取出最右边的元素再把它添加到最左边
+127.0.0.1:6379[1]> rpoplpush list list
+"hello3"
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "hello3"
+2) "hello"
+3) "hello1"
+4) "hello2"
+
+############################################
+127.0.0.1:6379[1]> lpush list e1
+(integer) 1
+127.0.0.1:6379[1]> lrange list 0 0
+1) "e1"
+#lset,根据下表修改元素，如果不存在会报错
+127.0.0.1:6379[1]> lset list 0 element1
+OK
+127.0.0.1:6379[1]> lrange list 0 0
+1) "element1"
+############################################
+#linsert list after element2 lululu,在左边的element2 的后面 添加 lululu 元素 ，遇到相同的值默认第一个
+127.0.0.1:6379[1]> lpush list element2
+(integer) 2
+127.0.0.1:6379[1]> linsert list before element2 lalala
+(integer) 3
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "lalala"
+2) "element2"
+3) "element1"
+127.0.0.1:6379[1]> linsert list after element2 lululu
+(integer) 4
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "lalala"
+2) "element2"
+3) "lululu"
+4) "element1"
+
+127.0.0.1:6379[1]> lpush list element2
+(integer) 5
+127.0.0.1:6379[1]> linsert list after element2 lululu2
+(integer) 6
+127.0.0.1:6379[1]> lrange list 0 -1
+1) "element2"
+2) "lululu2"
+3) "lalala"
+4) "element2"
+5) "lululu"
+6) "element1"
+```
+
+![image-20220407084219753](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220407084219753.png)
+
+小结：
+
+- 它实际上是一个链表，before Node after , left ,right都可以插入值
+- 如果key不存在就创建一个新的链表，存在就增加内容
+- 如果移除了所有的值，空链表，也代表不存在
+- 在两边插入或者改动值效率最高，中间元素相对效率会低一点
+
+消息队列，左边进去左边拿就是栈 lpush lpop
+
+左边进去右边出来就是消息队列lpush rpop
+
+#### **Set**
+
+set中的值不可以重复，比如java里可以用equals进行比较
+
+set开头都是s
+
+```bash
+#set里添加元素
+127.0.0.1:6379[1]> sadd set hello
+(integer) 1
+127.0.0.1:6379[1]> sadd set name 
+(integer) 1
+127.0.0.1:6379[1]> sadd set lgd
+(integer) 1
+#查看指定set的所有值
+127.0.0.1:6379[1]> smembers set
+1) "lgd"
+2) "name"
+3) "hello"
+#sismember看是否存在这个元素
+127.0.0.1:6379[1]> sismember set lgd
+(integer) 1
+127.0.0.1:6379[1]> sismember set lalalala
+(integer) 0
+############################################
+#获取个数
+127.0.0.1:6379[1]> scard set
+(integer) 3
+#再次add一个存在的元素，不可恶添加
+127.0.0.1:6379[1]> sadd set name
+(integer) 0
+127.0.0.1:6379[1]> smembers set
+1) "lgd"
+2) "name"
+3) "hello"
+############################################
+#移除hello元素
+127.0.0.1:6379[1]> srem set hello
+(integer) 1
+127.0.0.1:6379[1]> smembers set
+1) "lgd"
+2) "name"
+############################################
+#由于set无序且不存在重复,所以提供了一个api类似于抽奖
+127.0.0.1:6379[1]> srandmember set
+"name"
+127.0.0.1:6379[1]> sadd set sex
+(integer) 1
+127.0.0.1:6379[1]> sadd set 1
+(integer) 1
+127.0.0.1:6379[1]> sadd set 2
+(integer) 1
+127.0.0.1:6379[1]> SRANDMEMBER set 2
+1) "2"
+2) "sex"
+127.0.0.1:6379[1]> SRANDMEMBER set 2
+1) "2"
+2) "lgd"
+127.0.0.1:6379[1]> SRANDMEMBER set 2
+1) "1"
+2) "name"
+127.0.0.1:6379[1]> SRANDMEMBER set 2
+1) "2"
+2) "lgd"
+############################################
+15-7
+```
+
+#### **Hash**
+
+
+
+#### **Zset**
+
+
+
+#### **geospatial**
+
+
+
+#### **hyperloglogs**
+
+
+
+#### **bitmaps**
+
 
 
 
