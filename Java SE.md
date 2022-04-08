@@ -29,6 +29,27 @@ Collection
   - TreeMap
   - LinkedHashMap
 
+值传递与引用传递
+
+java只有值传递
+
+ int ,double等基本数据类型在参数传递时并没有传进变量本身，而是创建了一个新的相同数值的变量, 函数修改这个新变量并没有影响原来变量的数值,这也是按值传递的特点
+
+那为什么对象a的数据就改变了呢?
+
+因为虽然也是按值传递, 复制了一份新的引用但是指向的对象是同一个,修改后会影响原对象
+
+![img](https://img-blog.csdn.net/20180930224358492?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3E1NzA2NTAz/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+这种方式假如在函数内修改 a=null; 只是把复制的引用与对象的联系断开,不影响函数外与实际对象
+
+这就是按值传递, 即使传的是引用也不是引用传递,
+
+因为引用传递是不复制的,直接使用参数,如下图:
+
+这时候函数把指针a=null就指针就置空了,函数外也无法再通过指针访问对象了
+
+
 
 
 ### 1.数据类型
@@ -1089,4 +1110,383 @@ FileInputStream fileInputStream = new FileInputStream(new File("E:\\IDEA\\tests\
 ```
 
 读取文件输入流放到缓存区输出到内存管道流或通过输出流写入到文件。
+
+
+
+## SE REVIEW 3RD
+
+- JAVA SE
+- JAVA ME --Android 
+- JAVA EE
+
+JDK 开发者工具包
+
+JRE 运行环境
+
+JVM Java虚拟机
+
+手写个helloworld
+
+```java
+public class hello{
+    public static void main(String[] args){
+        System.out.println("Hello World~!");
+    }
+}
+```
+
+基本语法之
+
+- 注释
+
+  - 行内注释//
+  - 多行注释/**/
+  - 文档注释/** */
+
+- 关键字
+
+  abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return strictfp short static super switch synchronized this throw throws transient try void volatile while
+
+  **不常用，才要记**
+
+  assert 断言 为了方便调试程序 用JUnit进行替代
+
+  运行Java程序时可增加参数-enableassertions或者-ea打开断言。可通过-disableassertions或者-da关闭断言(默认情况,可有可无)。
+
+  **const** Java预留关键字，用于后期扩展用
+
+  **goto** 保留字以备扩充
+
+  **enum** 枚举
+
+  jdk1.5之前定义常量都是public static final,现在可以用枚举
+
+  ```java
+  public class EnumTest {
+      Signal color = Signal.RED;
+  
+      public void change() {
+          switch (color) {
+              case RED:
+                  color = Signal.GREEN;
+                  break;
+              case YELLOW:
+                  color = Signal.RED;
+                  break;
+              case GREEN:
+                  color = Signal.YELLOW;
+                  break;
+          }
+      }
+      void Print(){
+          System.out.println(this.color);
+      }
+  
+  //RED
+  //GREEN
+      public static void main(String[] args) {
+          EnumTest enumTest = new EnumTest();
+          enumTest.Print();
+          enumTest.change();
+          enumTest.Print();
+      }
+  }
+  enum Signal{
+      RED, YELLOW, GREEN;
+  }
+  ```
+
+  **instance** 比较是否是某个类（或者子类，实现接口）的实例
+
+  **native** 设计这个关键词就是java解决不了需要去调用本地方法库(C,C++)写的
+
+  **strictfp** ***\*strict float point (精确浮点)\****
+
+  strictfp 关键字可应用于类、接口或方法。使用 strictfp 关键字声明一个方法时，该方法中所有的float和double表达式都严格遵守FP-strict的限制,符合IEEE-754规范。当对一个类或接口使用 strictfp 关键字时，该类中的所有代码，包括嵌套类型中的初始设定值和代码，都将严格地进行计算。严格约束意味着所有表达式的结果都必须是 IEEE 754 算法对操作数预期的结果，以单精度和双精度格式表示。
+
+  **transient** 
+
+  当串行化某个对象时，如果该对象的某个变量是transient，那么这个变量不会被串行化进去。也就是说，假设某个类的成员变量是transient，那么当通过
+
+  ObjectOutputStream把这个类的某个实例
+
+  保存到磁盘上时，实际上transient变量的值是不会保存的。因为当从磁盘中读出这个对象的时候，对象的该变量会没有被赋值。
+
+  **volatile (那必然要提到JMM了)** 
+
+  同synchronized相比（synchronized通常称为重量级锁），volatile更轻量级
+
+  它可以保证在线程自己的内存里对变量进行写入操作后可以强制在主内存进行刷新，让其他线程的缓存失效。
+
+  它也禁止指令重排序
+
+  它只能保证单个共享变量读写原子性，并不能保证num++这种复合操作。复合操作需要用到并发包里的原子操作类JUC，通过循环CAS方式保证原子性。
+
+  ```java
+  public static AtomicInteger num = new AtomicInteger(0);
+  ```
+
+- 数据类型
+
+  - 基本数据类型
+
+    int4 short2  long8
+
+    0b(2进) 0x(16进) 0(八进)
+
+    double8 float4 
+
+     byte1 char2(ascii128 utf-8 Unicode '\u0000' '\b'转义 \t \n \\ \' \") boolean1(0 or 1 if(flag))
+
+  - 引用类型
+
+    栈指向堆
+
+    - 类
+    - 接口
+    - 数组
+
+- 类型转换
+
+  - 自动类型转换
+    - 低转高，子转父
+  - 强制类型转换
+    - 高转低，Object转其他就(Person)Object;
+
+- 变量与常量
+
+  type name [=value]
+
+  - 作用域
+
+    - 类变量
+    - 实例变量
+    - 局部变量
+
+  - 常量 final static LALALA_MAX_A = 100;
+
+  - 命名规范驼峰命名，见名知意
+
+    类需要比如HelloController首字母大写
+
+    常量：大写+下划线
+
+- 运算符
+
+  - 算术运算符
+
+    +-*/% ++ --
+
+  - 赋值运算符
+
+    = += -= *= /=
+
+  - 关系运算符
+
+    < > != >= <= instaceof ==
+
+  - 逻辑运算符
+
+    || && !
+
+  - 位运算符
+
+    | & ^ ~ >> << >>> <<<(三个<为无符号版)
+
+  - 条件运算符
+
+    ? : 
+
+    a>b? a: b
+
+  - 扩展运算符
+
+    += -= *= /=
+
+- 包机制
+
+  - 域名倒写
+  - package
+  - import
+
+- JavaDoc
+
+  - JDK帮助文档就是 javadoc
+    - @author
+    - @Version
+    - @Since
+    - @Description
+    - @param
+    - @return
+    - @throws
+
+- 流程控制
+
+  - Scanner 用户交互
+
+    System.in nextlinexxxx
+
+    System.out.println();
+
+  - 顺序 （自上而下）
+
+  - 选择  if单选择 ，if-else if-elseif-else switch jdk支持String,case不加break后面都会执行下去，default,这时候enum枚举就简化操作
+
+  - 循环 while do-while for
+
+- break & continue
+
+  break跳出循环，continue结束本轮循环
+
+  return结束方法运行、
+
+方法
+
+- 修饰符 返回值 方法名 (参数名) (return xxx);
+
+  public static void main(String[] args){}
+
+- 方法调用
+
+  - 类名+方法
+  - 对象+方法
+
+- 方法重载
+
+  - 名字相同，参数列表不同
+
+- 命令行传参，给main方法传参
+
+  ```bash
+  C:\Users\L\Desktop>java Computea lgd lgd1 lgd2
+  lgd
+  lgd1
+  lgd2
+  ```
+
+- 可变长参数
+
+  - ...必须放在最后一个参数
+
+- 递归
+
+  自己调用自己方法，记得给自己一个出口不然就是死循环Leecode
+
+数组
+
+- 定义
+
+  - new int[5]
+  - {1,2,3,,4,5}
+  - 同类型
+
+- 数组使用
+
+  - 通过下标拿到intsa[0]
+
+  - ArrayIndexOutOfBounds
+
+  - 增强for循环遍历
+
+    for(int:num nums[]){
+
+    ​	sout(num);
+
+    }
+
+  - 二维数组
+
+    - int[ ][ ]
+    - Arrays工具类
+    - 排序算法
+      - 冒泡
+      - 快排
+      - 选择排序
+      - 插入排序
+      - 归并
+      - 希尔
+      - 堆排序
+      - 基数排序
+
+面向对象
+
+- 类与对象
+
+  类是对象的抽象，对象是类的具体，类是Class,一个模板，根据模板实例化一个对象
+
+- 构造方法
+
+  - 构造的重载
+  - 有参无参(默认无参，如果手动定义了有参就必须手动再加无参构造，单例模式需要构造器私有，不能让人家new出来)
+
+- 栈存放引用，堆存放具体对象，引用指向堆里对应对象的地址
+
+- 封装
+
+  属性私有，提供setter和getter以进行操作内部属性
+
+- 继承
+
+  Object
+
+  extends
+
+  子类拥有父类全部特性
+
+  方法重写
+
+  java为单继承
+
+  this
+
+  super
+
+- 多态
+
+  左父右子
+
+  父类的引用指向子类的对象
+
+  Person person = new Student();
+
+  instanceof 如果匹配，可以进行类型间的转换，判断是否为实例的类，子类或者实现方法
+
+- 修饰符
+
+  - public
+  - protected
+  - private
+  - static 
+  - final
+  - abstract
+
+- 接口
+
+  - interface
+
+    只能定义方法名，子类必须重写其中的方法只有一个方法的接口叫做函数式接口可以使用lambda表达式
+
+    new Thread(->{
+
+    xxx
+
+    }).start();
+
+  - 接口比抽象类更加抽象
+
+  - 可是实现多个接口
+
+- 内部类
+
+  - 局部内部类
+  - 静态内部类
+  - 匿名内部类*
+
+异常
+
+- Throwable
+  - Execption
+    - 
+  - Error
+    - 
 
