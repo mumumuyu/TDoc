@@ -421,8 +421,6 @@ JMM对这八种指令的使用，制定了如下规则：
 
 　　**JMM决定一个线程对共享变量的写入何时对另一个线程可见，JMM定义了线程和主内存之间的抽象关系：共享变量存储在主内存(Main Memory)中，每个线程都有一个私有的本地内存（Local Memory），本地内存保存了被该线程使用到的主内存的副本拷贝，线程对变量的所有操作都必须在工作内存中进行，而不能直接读写主内存中的变量。这三者之间的交互关系如下**
 
-
-
 ![img](https://images2015.cnblogs.com/blog/1024555/201703/1024555-20170318223812776-1081654170.png)
 
  
@@ -447,16 +445,10 @@ JMM对这八种指令的使用，制定了如下规则：
 
 　　但是需要注意的是，我们一直在拿volatile和synchronized做对比，仅仅是因为这两个关键字在某些内存语义上有共通之处，volatile并不能完全替代synchronized，它依然是个轻量级锁，在很多场景下，volatile并不能胜任。看下这个例子：
 
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
 ```
-package test;
 
 import java.util.concurrent.CountDownLatch;
 
-/**
- * Created by chengxiao on 2017/3/18.
- */
 public class Counter {
     public static volatile int num = 0;
     //使用CountDownLatch来等待计算线程执行完
@@ -480,8 +472,6 @@ public class Counter {
 }
 ```
 
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
 执行结果：
 
 ```
@@ -504,12 +494,7 @@ public class Counter {
 
 　　针对num++这类复合类的操作，可以使用java并发包中的原子操作类原子操作类是通过循环CAS的方式来保证其原子性的。
 
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
 ```
-/**
- * Created by chengxiao on 2017/3/18.
- */
 public class Counter {　　//使用原子操作类
     public static AtomicInteger num = new AtomicInteger(0);
     //使用CountDownLatch来等待计算线程执行完
@@ -533,8 +518,6 @@ public class Counter {　　//使用原子操作类
 }
 ```
 
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
 执行结果
 
 ```
@@ -556,52 +539,5 @@ volatile还有一个特性：**禁止指令重排序优化。**
 　　**2.重排序是为了优化性能，但是不管怎么重排序，单线程下程序的执行结果不能被改变**
 
 　　　　比如：a=1;b=2;c=a+b这三个操作，第一步（a=1)和第二步(b=2)由于不存在数据依赖关系，所以可能会发生重排序，但是c=a+b这个操作是不会被重排序的，因为需要保证最终的结果一定是c=a+b=3。
-
-　　重排序在单线程模式下是一定会保证最终结果的正确性，但是在多线程环境下，问题就出来了，来开个例子，我们对第一个TestVolatile的例子稍稍改进，再增加个共享变量a
-
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
-```
-public class TestVolatile {
-    int a = 1;
-    boolean status = false;
-
-    /**
-     * 状态切换为true
-     */
-    public void changeStatus(){
-        a = 2;//1
-        status = true;//2
-    }
-
-    /**
-     * 若状态为true，则running。
-     */
-    public void run(){
-        if(status){//3
-            int b = a+1;//4
-            System.out.println(b);
-        }
-    }
-}
-```
-
-[![复制代码](https://common.cnblogs.com/images/copycode.gif)](javascript:void(0);)
-
-　　假设线程A执行changeStatus后，线程B执行run，我们能保证在4处，b一定等于3么？
-
-　　**答案依然是无法保证！**也有可能b仍然为2。上面我们提到过，为了提供程序并行度，编译器和处理器可能会对指令进行重排序，而上例中的1和2由于不存在数据依赖关系，则有可能会被重排序，先执行status=true再执行a=2。而此时线程B会顺利到达4处，而线程A中a=2这个操作还未被执行，所以b=a+1的结果也有可能依然等于2。
-
-　　使用volatile关键字修饰共享变量便可以禁止这种重排序。**若用volatile修饰共享变量，在编译时，会在指令序列中插入内存屏障来禁止特定类型的处理器重排序**
-
-　　volatile禁止指令重排序也有一些规则，简单列举一下：
-
-　　**1.当第二个操作是voaltile写时，无论第一个操作是什么，都不能进行重排序**
-
-　　**2.当地一个操作是volatile读时，不管第二个操作是什么，都不能进行重排序**
-
-　　**3.当第一个操作是volatile写时，第二个操作是volatile读时，不能进行重排序**
-
-总结：
 
 　　简单总结下，volatile是一种轻量级的同步机制，它主要有两个特性：一是保证共享变量对所有线程的可见性；二是禁止指令重排序优化。同时需要注意的是，volatile对于单个的共享变量的读/写具有原子性，但是像num++这种复合操作，volatile无法保证其原子性，当然文中也提出了解决方案，就是使用并发包中的原子操作类，通过循环CAS地方式来保证num++操作的原子性。关于原子操作类，会在后续的文章进行介绍。
