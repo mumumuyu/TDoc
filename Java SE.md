@@ -16,7 +16,7 @@ javadoc -encoding utf-8 -charset utf-8 Test.java
 
 集合框架：大类Collection , Map
 
-Collection
+**Collection**
 
 - List
   - ArrayList
@@ -24,12 +24,16 @@ Collection
 - Set
   - TreeSet
   - HashSet
-- Map
-  - HashMap
-  - TreeMap
-  - LinkedHashMap
 
-值传递与引用传递
+
+
+Map
+
+- HashMap
+- TreeMap
+- LinkedHashMap
+
+**值传递与引用传递**
 
 java只有值传递
 
@@ -1137,121 +1141,128 @@ public class hello{
 
 基本语法之
 
-- 注释
+**注释**
 
-  - 行内注释//
-  - 多行注释/**/
-  - 文档注释/** */
+- 行内注释//
+- 多行注释/**/
+- 文档注释/** */
 
-- 关键字
+**关键字**
 
-  abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return strictfp short static super switch synchronized this throw throws transient try void volatile while
+abstract assert boolean break byte case catch char class const continue default do double else enum extends final finally float for goto if implements import instanceof int interface long native new package private protected public return strictfp short static super switch synchronized this throw throws transient try void volatile while
 
-  **不常用，才要记**
+##### **不常用关键字**
 
-  assert 断言 为了方便调试程序 用JUnit进行替代
+**才要记**
 
-  运行Java程序时可增加参数-enableassertions或者-ea打开断言。可通过-disableassertions或者-da关闭断言(默认情况,可有可无)。
+assert 断言 为了方便调试程序 用JUnit进行替代
 
-  **const** Java预留关键字，用于后期扩展用
+运行Java程序时可增加参数-enableassertions或者-ea打开断言。可通过-disableassertions或者-da关闭断言(默认情况,可有可无)。
 
-  **goto** 保留字以备扩充
+**const** Java预留关键字，用于后期扩展用
 
-  **enum** 枚举
+**goto** 保留字以备扩充
 
-  jdk1.5之前定义常量都是public static final,现在可以用枚举
+**enum** 枚举
 
-  ```java
-  public class EnumTest {
-      Signal color = Signal.RED;
-  
-      public void change() {
-          switch (color) {
-              case RED:
-                  color = Signal.GREEN;
-                  break;
-              case YELLOW:
-                  color = Signal.RED;
-                  break;
-              case GREEN:
-                  color = Signal.YELLOW;
-                  break;
-          }
-      }
-      void Print(){
-          System.out.println(this.color);
-      }
-  
-  //RED
-  //GREEN
-      public static void main(String[] args) {
-          EnumTest enumTest = new EnumTest();
-          enumTest.Print();
-          enumTest.change();
-          enumTest.Print();
-      }
-  }
-  enum Signal{
-      RED, YELLOW, GREEN;
-  }
-  ```
+jdk1.5之前定义常量都是public static final,现在可以用枚举
 
-  **instance** 比较是否是某个类（或者子类，实现接口）的实例
+```java
+public class EnumTest {
+    Signal color = Signal.RED;
 
-  **native** 设计这个关键词就是java解决不了需要去调用本地方法库(C,C++)写的
+    public void change() {
+        switch (color) {
+            case RED:
+                color = Signal.GREEN;
+                break;
+            case YELLOW:
+                color = Signal.RED;
+                break;
+            case GREEN:
+                color = Signal.YELLOW;
+                break;
+        }
+    }
+    void Print(){
+        System.out.println(this.color);
+    }
 
-  **strictfp** ***\*strict float point (精确浮点)\****
+//RED
+//GREEN
+    public static void main(String[] args) {
+        EnumTest enumTest = new EnumTest();
+        enumTest.Print();
+        enumTest.change();
+        enumTest.Print();
+    }
+}
+enum Signal{
+    RED, YELLOW, GREEN;
+}
+```
 
-  strictfp 关键字可应用于类、接口或方法。使用 strictfp 关键字声明一个方法时，该方法中所有的float和double表达式都严格遵守FP-strict的限制,符合IEEE-754规范。当对一个类或接口使用 strictfp 关键字时，该类中的所有代码，包括嵌套类型中的初始设定值和代码，都将严格地进行计算。严格约束意味着所有表达式的结果都必须是 IEEE 754 算法对操作数预期的结果，以单精度和双精度格式表示。
+**instance** 比较是否是某个类（或者子类，实现接口）的实例
 
-  **transient** 
+**native** 设计这个关键词就是java解决不了需要去调用本地方法库(C,C++)写的
 
-  当串行化某个对象时，如果该对象的某个变量是transient，那么这个变量不会被串行化进去。也就是说，假设某个类的成员变量是transient，那么当通过
+**strictfp** ***\*strict float point (精确浮点)\****
 
-  ObjectOutputStream把这个类的某个实例
+strictfp 关键字可应用于类、接口或方法。使用 strictfp 关键字声明一个方法时，该方法中所有的float和double表达式都严格遵守FP-strict的限制,符合IEEE-754规范。当对一个类或接口使用 strictfp 关键字时，该类中的所有代码，包括嵌套类型中的初始设定值和代码，都将严格地进行计算。严格约束意味着所有表达式的结果都必须是 IEEE 754 算法对操作数预期的结果，以单精度和双精度格式表示。
 
-  保存到磁盘上时，实际上transient变量的值是不会保存的。因为当从磁盘中读出这个对象的时候，对象的该变量会没有被赋值。
+**transient** 
 
-  **volatile (那必然要提到JMM了)** 
+当串行化某个对象时，如果该对象的某个变量是transient，那么这个变量不会被串行化进去。也就是说，假设某个类的成员变量是transient，那么当通过
 
-  同synchronized相比（synchronized通常称为重量级锁），volatile更轻量级
+ObjectOutputStream把这个类的某个实例
 
-  它可以保证在线程自己的内存里对变量进行写入操作后可以强制在主内存进行刷新，让其他线程的缓存失效。
+保存到磁盘上时，实际上transient变量的值是不会保存的。因为当从磁盘中读出这个对象的时候，对象的该变量会没有被赋值。
 
-  它也禁止指令重排序
+**volatile (那必然要提到JMM了)** 
 
-  它只能保证单个共享变量读写原子性，并不能保证num++这种复合操作。复合操作需要用到并发包里的原子操作类JUC，通过循环CAS方式保证原子性。
+JMM是java内存模型，抽象为一个主内存存储共享变量，其他每个线程会独占一部分本地内存，线程里面会有所需使用的主内存的共享变量的副本，然后线程在自己的区域内操作副本，当然这可能会导致在线程还没有把自己改变完的变量写入到主内存时候，然后其他线程不知道情况下使用了主内存老的数据的副本进行缓存，使用volatile可以保证单个共享变量读写原子性。
 
-  ```java
-  public static AtomicInteger num = new AtomicInteger(0);
-  ```
+同synchronized相比（synchronized通常称为重量级锁），volatile更轻量级
 
-- 数据类型
+它可以保证在线程自己的内存里对变量进行写入操作后可以强制在主内存进行刷新，让其他线程的缓存失效。
 
-  - 基本数据类型
+它也禁止指令重排序
 
-    int4 short2  long8
+它只能保证单个共享变量读写原子性，并不能保证num++这种复合操作。复合操作需要用到并发包里的原子操作类JUC，通过循环CAS方式保证原子性。
 
-    0b(2进) 0x(16进) 0(八进)
+```java
+public static AtomicInteger num = new AtomicInteger(0);
+```
 
-    double8 float4 
+##### 数据类型
 
-     byte1 char2(ascii128 utf-8 Unicode '\u0000' '\b'转义 \t \n \\ \' \") boolean1(0 or 1 if(flag))
+- 基本数据类型
 
-  - 引用类型
+  int4 short2  long8
 
-    栈指向堆
+  0b(2进) 0x(16进) 0(八进)
 
-    - 类
-    - 接口
-    - 数组
+  double8 float4 
 
-- 类型转换
+   byte1 char2(ascii128 utf-8 Unicode '\u0000' '\b'转义 \t \n \\ \' \") boolean1(0 or 1 if(flag))
 
-  - 自动类型转换
-    - 低转高，子转父
-  - 强制类型转换
-    - 高转低，Object转其他就(Person)Object;
+- 引用类型
+
+  栈指向堆
+
+  - 类
+  - 接口
+  - 数组
+
+##### 类型转换
+
+- 自动类型转换
+
+  - 低转高，子转父
+
+- 强制类型转换
+
+  - 高转低，Object转其他就(Person)Object;
 
 - 变量与常量
 
@@ -1340,7 +1351,7 @@ public class hello{
 
   return结束方法运行、
 
-方法
+##### 方法
 
 - 修饰符 返回值 方法名 (参数名) (return xxx);
 
@@ -1372,7 +1383,7 @@ public class hello{
 
   自己调用自己方法，记得给自己一个出口不然就是死循环Leecode
 
-数组
+##### 数组
 
 - 定义
 
@@ -1408,7 +1419,7 @@ public class hello{
       - 堆排序
       - 基数排序
 
-面向对象
+##### 面向对象
 
 - 类与对象
 
@@ -1482,11 +1493,451 @@ public class hello{
   - 静态内部类
   - 匿名内部类*
 
-异常
+##### 异常
 
 - Throwable
   - Execption
-    - 
+    - 运行时异常
+      - 1/0
+      - ClassNotFound
+      - NullPoint
+      - UnkonwType
+      - ArraysOutOfBound
+    - 检查时异常
   - Error
-    - 
+    - AWT
+    - JVM
+      - StackOverFlower(栈溢出)
+      - OutOfMemory(内存溢出)
+- 五个关键字
+  - try-catch(先小后大)
+  - try-catch-finally
+  - throw-内部手动抛出异常
+  - throws方法抛出异常
+- 自定义异常
+  - 继承Exception类
+
+##### 常用类
+
+- Object
+
+  - hashcode()
+
+  - toString()
+
+  - clone()
+
+    在未实现Cloneable接口的实例上调用 Object 的 clone 方法会导致抛出异常CloneNotSupportedException 
+
+  - getClass()
+
+  - nofity()
+
+  - notifyAll()
+
+  - wait()
+
+  - equals()
+
+    对于基本数据类型，用==可以比较他们的值
+
+    对于复合数据类型(类)，比较的是引用地址，但在一些类库当中这个方法被覆盖掉了，如String,Integer,Date在这些类当中equals有其自身的实现，而不再是比较类在堆内存中的存放地址了。
+
+    地址和内容都比较，String进行了重写，只比内容
+
+  - finalize
+
+    - jvm垃圾回收相关
+    - 当一个堆空间中的对象没有被栈空间变量指向的时候，这个对象会等待被java回收
+
+- String
+
+  当String创建时会现在缓冲区里找有没有一样的，有的话就指向它，没有就new一个。当出现第二个要创建相同值的对象时候，如果没有再new一个的要求（浪费资源，因为String一旦new出来就是final，class和value[]都 不可变，这里是jdk8所以value[]仍然是char），就指向缓冲区里的对象。
+
+  .intern()方法的返回值还是字符串"abc"，检查字符串池里是否存在"abc"这么一个字符串，如果存在，就返回池里的字符串；如果不存在，该方法会 把"abc"添加到字符串池中，然后再返回它的引用。
+
+  常用一些方法比如
+
+  trim():去掉两边空格
+
+  subString():截取字符串
+
+  charAt(int index);//返回指定索引index位置上的字符，索引范围从0开始
+
+  indexOf()
+
+  split()比如string.split("@")可以得到一个String[] 这个数组是按照@进行拆分开得到的
+
+  ```java
+  String address="上海@上海市@闵行区@吴中路";
+  String[] splitAddr=address.split("@");
+  System.out.println(splitAddr [0]+splitAddr [1]+splitAddr [2]+splitAddr [3]);
+  ```
+
+  
+
+  lastIndexOf(String str);查找最后一次出现的位置
+
+  equalsIgnoreCase() //忽略大小写的情况下判断内容是否相同
+
+  equals() //判断内容是否相同
+
+  toLowerCase();//变小写
+
+  toCharArray();将字符串转换成字符串数组
+
+  valueOf(int i);//其他数据类型转String
+
+  - StringBuffer继承自AbstractStringBuffer,实现了appendable
+
+    源码里45个synchronized
+
+    可变，线程安全，但是效率不高
+
+  - StringBuilder,实现了appendable
+
+    可变，不安全，效率相对高
+
+- Math
+
+  - Random	生成随机数 UUID
+
+- **File**
+
+  - 创建文件
+  - 查看文件
+  - 修改文件
+  - 删除文件
+
+- 包装类
+
+  - 自动装箱，拆箱，valueOf
+  - 八大基本类型不是类，而java面向对象所以把他们封装成类
+
+- Date
+
+  - Date
+
+  - SimpleDateFormat
+
+    yyyy-MM-dd HH-mm-ss
+
+  - Calendar建议使用
+
+##### 集合
+
+- Collection
+
+  - List
+
+    有序，可重复
+
+    - **ArrayList**
+
+      基于数组，插入与删除的效率不高，随机读取快。Iterator，迭代器
+
+      add
+
+      remove
+
+      contaions
+
+      size
+
+    - **LinkedList**
+
+      getFirst()
+
+      getLast()
+
+      removeFirst()
+
+      addFirst()
+
+      链表，插入删除效率相对快，随机读取不如ArrayList快，就看读多还是写多用谁了。
+
+    - Vector
+
+    - Stack
+
+  - Set
+
+    无序，不可重复
+
+    - **HashSet**
+
+      
+
+    - TreeSet
+
+      
+
+- Map
+
+  - **HashMap** 重点
+
+    jdk1.7是数组+链表
+
+    容易产生死锁与环锁
+
+    jdk1.8是数组+链表+红黑树(>8)变
+
+    负载因子为0.75，也就是一开始默认16个容量，当数目达到12个以后扩容。如果大了查询效率低，如果小了，空间浪费。
+
+    为什么>8会转红黑树呢？
+
+    HashMap
+
+    一开始是一些数组，桶，
+
+    当重复时候就链表补上。
+
+    数组必须为2的幂源码中是1<<4为初始值16，为了实现高存储，数据尽可能均匀，那就用hash%length(hash为奇素数如31)，这样位运算开销小于其他一些运算。
+
+  - TreeMap
+
+- Collections 工具类
+
+- 泛型 jdk1.5 
+
+  主要起约束作用，避免类型转换之间的问题
+
+IO流
+
+一切IO流一个进来一个出去，中间一个处理流
+
+- InputStream
+- OutputStream
+
+字符流
+
+- Writer
+- Reader
+
+buffer
+
+filter过滤
+
+Convering转换 inputstreamRead 、 O W
+
+ObjectInputStream
+
+DataInputSteam
+
+Print
+
+- 字节流 OutputStream InputStream
+
+- 字符流 Reader Writer
+
+- 节点流 CharArrayReader Writer inputstram outputstram
+
+- 管道流 pipe pipedOutpuStream
+
+- 处理流 buffer 
+
+  - data
+  - 转换流 InputStreamReader OutputStreamWriter
+  - Filter
+  - print
+
+- **序列化 Serializable serialVersionUID**
+
+  transient 透明的 序列化就不考虑这个属性
+
+  Exrernalizable
+
+##### 多线程
+
+- 进程与线程
+
+- run(),start()
+
+- 线程创建方式
+
+  - extends Thread  start() native，java无权调用，底层交给本地方法完成
+
+  - Runnable 函数式接口 可以用lambda表达式
+
+    ```java
+    new Thread(()->{
+        System.out.print()
+    }).start();
+    ```
+
+  - Callable
+
+    可以有返回值JUC里
+
+  - 静态代理
+
+    对类的增强
+
+    就是 new Thread(Runnable).start();
+
+  - 动态代理
+
+    利用反射 , Proxy与invocationHandler
+
+  - Lambda表达式
+
+    函数式编程，避免内部类定义过多，不便阅读
+
+- 线程状态
+
+  - 新建
+  - 就绪
+  - 运行
+  - 阻塞
+  - 死亡
+
+- 常用方法
+
+  - sleep
+  - join
+  - yield
+  - isLive
+  - start
+  - 优先级 setPriority
+  - interrupt()
+
+- 线程同步
+
+  多个线程操作同一个操作，并发
+
+  - 队列+锁
+
+  - synchronized
+
+    - 同步方法
+
+      弊端，锁太多了
+
+    - **同步代码块**
+
+      synchronized(类(默认this)){
+
+      }
+
+    - 第一个线程拿到锁，后面线程排队，直到这个人释放锁后面人拿到
+
+    - 死锁：
+
+      - 互斥
+      - 请求与保持
+      - 不剥夺
+      - 循环等待
+
+  - Lock(优先级高)----ReentranLock
+
+    - lock()
+    - trylock()
+    - unlock()
+
+- 线程通信
+
+  - 缓冲区:消息队列
+  - 标志位：红绿灯 flag
+  - wait()
+  - nofifyAll()
+
+- 线程池
+
+  池化技术，进来就给你先创建好几个连接池
+
+  - 池的大小
+  - 最大连接数
+  - 等待时间
+
+  ```java
+  ExecutorService service = Executors.newFixedThreadPool(5);
+  
+  public static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory) {
+          return new ThreadPoolExecutor(nThreads, nThreads,
+                                        0L, TimeUnit.MILLISECONDS,
+                                        new LinkedBlockingQueue<Runnable>(),
+                                        threadFactory);
+      }
+  ```
+  
+  线程池参数
+  
+  ThreadPoolExecutor 类中参数最多的构造方法：
+  
+  1）corePoolSize（核心线程池大小）：核心线程池大小， 新的任务到线程池后，若线程池已创建的线程数小于corePoolSize，即便存在空闲线程，线程池会创建新的线程，直到核心线程池已满。
+  
+  2）maximumPoolSize（最大线程池大小）：线程池所允许的最大线程个数。当队列满了，且已创建的线程数小于maximumPoolSize，则线程池会创建新的线程来执行任务。另外，对于无界队列，可忽略该参数。
+  
+  3）keepAliveTime（线程保持存活时间）当线程池中线程数大于核心线程数时，线程的空闲时间如果超过线程存活时间，那么这个线程就会被销毁，直到线程池中的线程数小于等于核心线程数。
+  
+  4）unit（参数的时间单位）线程存活时间的单位
+  
+  5）workQueue（任务队列）：用于传输和保存等待执行任务的阻塞队列。
+  
+  6）threadFactory（线程工厂）：创建新线程。主要用于给任务线程起个自定义名字
+  
+  7）handler（线程饱和策略）：当线程池和队列都满了，再加入线程时会执行此策略。
+  
+  ![img](https://img-blog.csdnimg.cn/20200626101309881.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNDAyODU0,size_16,color_FFFFFF,t_70)
+
+网络编程
+
+- URL
+  - IP 
+  - port
+  - Socket
+- TCP
+  - 三次握手
+  - 四次挥手
+- UDP
+  - 无连接的
+  - 以packet发送Dataprogram
+- 聊天通信
+- 文件上传
+
+GUI(FX)
+
+- AWT
+  - Frame
+  - 事件
+    - 鼠标
+    - 键盘
+    - 窗口
+    - 动作事件
+- Swing
+  - 文本框
+  - 标签
+  - 按钮
+  - 文本域
+  - 面板
+  - 布局方式
+  - 关闭窗口
+  - 组件
+
+注解与反射
+
+- 注解
+  - 元注解
+  - 内置注解
+  - 自定义注解
+  - 反射读取注解
+- 反射
+  - Class
+    - new Instance();
+  - 类加载机制
+  - Method
+  - 存在重载需要参数类型
+  - Field
+  - Constructs
+    - newInstance()
+    - 获取时候需要传递class类型
+  - 破坏私有关键字
+    - setAccessible(true);
+  - 性能分析
+    - 正常>检测关闭的反射>默认的反射
+  - 反射获取注解，泛型
+- 单例模式探究
+- Stream
+- ForkJoin
+  - 效率对比
 
