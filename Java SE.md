@@ -12,6 +12,20 @@ javadoc -encoding utf-8 -charset utf-8 Test.java
 
 ‘\u0041’
 
+**类的加载顺序**
+
+(1) 父类静态对象和静态代码块
+
+(2) 子类静态对象和静态代码块
+
+(3) 父类非静态对象和非静态代码块
+
+(4) 父类构造函数
+
+(5) 子类 非静态对象和非静态代码块
+
+(6) 子类构造函数
+
 常用类如:Object,Date,String,Math,Random,File等
 
 集合框架：大类Collection , Map
@@ -1259,6 +1273,8 @@ public static AtomicInteger num = new AtomicInteger(0);
 - 自动类型转换
 
   - 低转高，子转父
+
+    在子类创建前需要父类先创建，当父类只有有参构造而没有无参构造时，子类必须要有显示构造父类的有参构造方法，否则会报错
 
 - 强制类型转换
 

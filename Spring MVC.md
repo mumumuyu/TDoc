@@ -340,7 +340,7 @@ public String json2() throws JsonProcessingException {
     <mvc:interceptor>
         <!--包括这个请求下面的所有资源-->
         <mvc:mapping path="/**"/>
-        <bean class="com.kuang.config.MyInterceptor"/>
+        <bean class="com.lgd.config.MyInterceptor"/>
     </mvc:interceptor>
 </mvc:interceptors>
 
@@ -348,7 +348,7 @@ public String json2() throws JsonProcessingException {
     <mvc:interceptor>
         <!--包括这个请求下面的所有资源-->
         <mvc:mapping path="/user/**"/>
-        <bean class="com.kuang.config.LoginInterceptor"/>
+        <bean class="com.lgd.config.LoginInterceptor"/>
     </mvc:interceptor>
 </mvc:interceptors>
 ```
