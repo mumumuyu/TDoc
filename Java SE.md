@@ -1216,7 +1216,7 @@ enum Signal{
 }
 ```
 
-**instance** 比较是否是某个类（或者子类，实现接口）的实例
+**instanceOf** 比较是否是某个类（或者子类，实现接口）的实例
 
 **native** 设计这个关键词就是java解决不了需要去调用本地方法库(C,C++)写的
 
@@ -1234,7 +1234,7 @@ ObjectOutputStream把这个类的某个实例
 
 **volatile (那必然要提到JMM了)** 
 
-JMM是java内存模型，抽象为一个主内存存储共享变量，其他每个线程会独占一部分本地内存，线程里面会有所需使用的主内存的共享变量的副本，然后线程在自己的区域内操作副本，当然这可能会导致在线程还没有把自己改变完的变量写入到主内存时候，然后其他线程不知道情况下使用了主内存老的数据的副本进行缓存，使用volatile可以保证单个共享变量读写原子性。
+JMM是java内存模型，抽象为一个主内存存储共享变量，其他每个线程会独占一部分本地内存，线程里面会有所需使用的主内存的共享变量的副本，然后线程在自己的区域内操作副本，当然这可能会导致在线程还没有把自己改变完的变量写入到主内存时候，然后其他线程不知道情况下使用了主内存老的数据的副本进行缓存，使用volatile可以保证单个共享变量读写可见性。
 
 同synchronized相比（synchronized通常称为重量级锁），volatile更轻量级
 
@@ -1332,6 +1332,7 @@ public static AtomicInteger num = new AtomicInteger(0);
 
 - 包机制
 
+  - public>protected>default>private
   - 域名倒写
   - package
   - import
@@ -1427,7 +1428,7 @@ public static AtomicInteger num = new AtomicInteger(0);
     - Arrays工具类
     - 排序算法
       - 冒泡
-      - 快排
+      - 快速排序
       - 选择排序
       - 插入排序
       - 归并
@@ -1503,6 +1504,8 @@ public static AtomicInteger num = new AtomicInteger(0);
 
   - 可是实现多个接口
 
+    public class a implements b,c,d{}
+
 - 内部类
 
   - 局部内部类
@@ -1527,6 +1530,7 @@ public static AtomicInteger num = new AtomicInteger(0);
       - OutOfMemory(内存溢出)
 - 五个关键字
   - try-catch(先小后大)
+  - try-finally
   - try-catch-finally
   - throw-内部手动抛出异常
   - throws方法抛出异常
@@ -1559,7 +1563,7 @@ public static AtomicInteger num = new AtomicInteger(0);
 
     对于复合数据类型(类)，比较的是引用地址，但在一些类库当中这个方法被覆盖掉了，如String,Integer,Date在这些类当中equals有其自身的实现，而不再是比较类在堆内存中的存放地址了。
 
-    地址和内容都比较，String进行了重写，只比内容
+    地址和内容都比较，String,Integer进行了重写，只比内容value
 
   - finalize
 

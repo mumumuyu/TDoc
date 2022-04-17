@@ -5,10 +5,10 @@
 ##### 		1.增
 
 ```java
-Class.forName("com.mysql.cj.jdbc.Driver");
+		Class.forName("com.mysql.cj.jdbc.Driver");//加载驱动类
         System.out.println("Driver loaded");
         Connection connection = DriverManager.getConnection
-                ("jdbc:mysql://localhost:3306/javaweb-test?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT", "root", "1328910");
+                ("jdbc:mysql://localhost:3306/javaweb-test?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT", "root", "1328910");//获取连接
         Statement stmt = connection.createStatement();    //Create a statement
         String sql = "insert into student(id, name, sex) values (?,?,?);";    //insert
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -314,5 +314,4 @@ innodb：支持事务，行级锁。5.6+后有全局索引，data与index一起�
 - verchar索引要制定其长度
 
 - 对于行数超过500w与容量超过2G的表要进行分表
-
 
