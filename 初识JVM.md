@@ -28,7 +28,7 @@ jvm中类加载器的认识	rt-jar ext application
 
 GC垃圾回收在堆Heap与方法区中，而jvm调优就几乎都在堆中
 
-![image-20220328202415815](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220328202415815.png)
+![image-20220328202415815](C:\Users\L\Desktop\文档\photo\image-20220328202415815-16511122258921.png)
 
 详细完整版：
 
@@ -138,7 +138,7 @@ jdk1.6引入Domain，域，不同域有不同的操作权限，就好像Linux分
 - 2、**对于栈来说不存在垃圾回收问题**，只要线程一旦结束，该栈就Over，生命周期和线程一致，是线程私有的。
 - 3、当栈调用深度大于栈深度时就会出现StackOverFlowError的错误，程序会停下来。
 
-![image-20220403210258221](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220403210258221.png)
+![image-20220403210258221](C:\Users\L\Desktop\文档\photo\image-20220403210258221-16511122629592.png)
 
 - **栈里面会放什么东西那？**
 
@@ -244,7 +244,7 @@ Full GC，GC
   
   - 1、Java虚拟机的堆内存设置不够，尝试扩大堆内存，可以通过参数 -Xms（初始值大小），-Xmx（最大大小）来调整。-XX:+PrintGCDetails （打印GC细节）
   
-    扩展VM选项在这![image-20220404124317308](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220404124317308.png)
+    扩展VM选项在这![image-20220404124317308](C:\Users\L\Desktop\文档\photo\image-20220404124317308-16511122706123.png)
   
   - 2、代码中创建了大量大对象，并且长时间不能被垃圾收集器收集（存在被引用）或者死循环。
 
@@ -297,13 +297,13 @@ MAT（Eclipse），Jprofiler工具分析OOM原因
 
 -Xmx2056m -Xms1024m -XX:+HeapDumpOnOutOfMemoryError
 
-![image-20220404143806508](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220404143806508.png)
+![image-20220404143806508](C:\Users\L\Desktop\文档\photo\image-20220404143806508-16511122726544.png)
 
 打开Dump文件进行分析
 
 找到犯错位置
 
-![image-20220404162344922](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220404162344922.png)
+![image-20220404162344922](C:\Users\L\Desktop\文档\photo\image-20220404162344922-16511122738535.png)
 
 ##### 15.GC（垃圾回收器）
 

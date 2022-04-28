@@ -159,6 +159,10 @@ public ArrayList getListByCid(String cid) throws SQLException, ClassNotFoundExce
 
 弄成null了还set个鬼！！！
 
+##### 7.关于setFetchSize
+
+通过setFetchSize(line//行数),最主要是为了减少网络交互次数设计的。访问ResultSet时，如果它每次只从服务器上取一行数据，则会产生大量的开销。setFetchSize的意思是当调用rs.next时，ResultSet会一次性从服务器上取得多少行数据回来，这样在下次rs.next时，它可以直接从内存中获取出数据而不需要网络交互，提高了效率。 这个设置可能会被某些JDBC驱动忽略的，而且设置过大也会造成内存的上升。
+
 ## JDBC基础
 
 ### 数据连接池

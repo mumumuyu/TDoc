@@ -221,6 +221,56 @@ class Ticket2 {
 }
 ```
 
+主要就是先lock();
+
+然后try里放业务代码，
+
+finally解锁unlock()
+
+```java
+/**
+ * Creates an instance of {@code ReentrantLock}.
+ * This is equivalent to using {@code ReentrantLock(false)}.
+ */
+public ReentrantLock() {
+    sync = new NonfairSync();
+}
+
+/**
+ * Creates an instance of {@code ReentrantLock} with the
+ * given fairness policy.
+ *
+ * @param fair {@code true} if this lock should use a fair ordering policy
+ */
+public ReentrantLock(boolean fair) {
+    sync = fair ? new FairSync() : new NonfairSync();
+}
+```
+
+那么
+
+>synchronized 与 ReentranLock
+
+1. synchronized为java内置关键字，Lock为java类
+
+2. synchronized无法判断锁的状态，Lock可以判断是否获取到了锁
+
+3. synchronized会自动释放锁，隐式的，lock必须要手动释放锁lock() and unlock();如果不释放锁就会出现死锁，相对灵活性也高
+
+4. synchronized 线程1(获得锁，如果阻塞)，线程2(一直等待)；
+
+   lock锁就不一定会等待下去了，因为其lock.tryLock();
+
+5. synchronized 为可重入锁(一个线程已经获得了某个锁，可以再次获取锁而不出现死锁，当然释放也要释放多次)，不可以中断，非公平，Lock是一个类，可重入的，可以判断锁，非公平(可以自己设置)源码通过ReentrantLock(boolean fair)
+
+6. synchronized 适合锁少量代码同步，Lock适合锁大量的同步代码
+
+那么
+
+>锁是什么，怎么看锁的是谁？
+
+
+
 ### 4.生产者和消费者
 
 

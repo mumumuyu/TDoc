@@ -138,7 +138,7 @@ Class c = Class.forName("java.lang.String")
 - xxx.getClass();
 - Class.getForName("xxx.xx.xx")
 
-![image-20220304131827913](./pic/image-20220304144421000)
+![image-20220304131827913](./photo/image-20220304144421000.png)
 
 #### 哪些类型有Class对象
 
@@ -150,7 +150,7 @@ Class c = Class.forName("java.lang.String")
 - primitive type:基本数据类型
 - void
 
-![image-20220304145412081](./pic/image-20220304145412081.png)
+![image-20220304145412081](./photo/image-20220304145412081.png)
 
 只要元素类型与维度一样，就是同一个Class
 
@@ -299,7 +299,7 @@ void Test1(){
     }
 ```
 
-![image-20220305134823191](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220305134823191.png)
+![image-20220305134823191](C:\Users\L\Desktop\文档\photo\image-20220305134823191-16511124536141.png)
 
 显然，普通操作比使用反射(关闭验证权限)再操作的效率快了约200倍，所以不要什么都用反射.
 
@@ -331,7 +331,7 @@ Method test1 = Generic_Ref.class.getMethod("test1", Map.class, List.class);
         }
 ```
 
-![image-20220305141313593](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220305141313593.png)
+![image-20220305141313593](C:\Users\L\Desktop\文档\photo\image-20220305141313593-16511124554432.png)
 
 先获取泛型（形参还是返回值），然后判断它是不是一个参数化类型，是的话强转为参数化类型获取它真实的参数类型
 

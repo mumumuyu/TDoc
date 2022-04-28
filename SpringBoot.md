@@ -733,15 +733,14 @@ spring.mail.properties.mail.smtp.ssl.enable=true
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
 
-        helper.setSubject("通知-明天来狂神这听课");
-        helper.setText("<b style='color:red'>今天 7:30来开会</b>",true);
+        helper.setSubject("通知-明天上午上课");
+        helper.setText("<b style='color:red'>明天 8:00上课</b>",true);
 
         //发送附件
-        //helper.addAttachment("1.jpg",new File(""));
-        //helper.addAttachment("2.jpg",new File(""));
+        helper.addAttachment("1.jpg",new File("C:\\Users\\Asus\\Pictures\\Saved Pictures\\Ren.jpg"));
 
-        helper.setTo("2622046365@qq.com");
-        helper.setFrom("2622046365@qq.com");
+        helper.setTo("1017276522@qq.com");
+        helper.setFrom("1017276522@qq.com");
 
         javaMailSender.send(mimeMessage);
     }

@@ -57,7 +57,7 @@ java只有值传递
 
 因为虽然也是按值传递, 复制了一份新的引用但是指向的对象是同一个,修改后会影响原对象
 
-![img](https://img-blog.csdn.net/20180930224358492?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3E1NzA2NTAz/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+![img](C:\Users\L\Desktop\文档\photo\70.png)
 
 这种方式假如在函数内修改 a=null; 只是把复制的引用与对象的联系断开,不影响函数外与实际对象
 
@@ -170,7 +170,7 @@ Java9后，String类改用byte[]来存数据
 
 如果一个String对象已经被创建过，就会从String Pool中获得引用，只有String不可变，才可以使用String Pool
 
-![img](https://camo.githubusercontent.com/a8170bdc42d86acbe28eab2dabdc32a94ecf5441fd4f5b1a539b8848df7d8c7b/68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f696d6167652d32303139313231303030343133323839342e706e67)
+![img](C:\Users\L\Desktop\文档\photo\68747470733a2f2f63732d6e6f7465732d313235363130393739362e636f732e61702d6775616e677a686f752e6d7971636c6f75642e636f6d2f696d6167652d32303139313231303030343133323839342e706e67.png)
 
 String 的不可变也让其具备线程安全，可以在多线程中使用
 
@@ -1106,7 +1106,7 @@ Java 注解是附加在代码中的一些元信息，用于一些工具在编译
 
 ### IO流
 
-![img](https://www.runoob.com/wp-content/uploads/2013/12/iostream2xx.png)
+![img](C:\Users\L\Desktop\文档\photo\iostream2xx.png)
 
 ```java
 FileInputStream fileInputStream = new FileInputStream(new File("E:\\IDEA\\tests\\high-test\\net_test\\test.txt"));
@@ -1898,7 +1898,7 @@ Print
   
   7）handler（线程饱和策略）：当线程池和队列都满了，再加入线程时会执行此策略。
   
-  ![img](https://img-blog.csdnimg.cn/20200626101309881.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNDAyODU0,size_16,color_FFFFFF,t_70)
+  ![img](C:\Users\L\Desktop\文档\photo\watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyNDAyODU0,size_16,color_FFFFFF,t_70.png)
 
 网络编程
 

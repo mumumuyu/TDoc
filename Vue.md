@@ -147,7 +147,7 @@ axios 是一个基于Promise 用于浏览器和 nodejs 的 HTTP 客户端，本�
 
 #####  Vue生命周期
 
-![img](https://upload-images.jianshu.io/upload_images/13119812-5890a846b6efa045.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
+![img](C:\Users\L\Desktop\文档\photo\webp.webp)
 
 ##### 引入json
 
@@ -470,7 +470,7 @@ module.exports = {
 
 输出效果
 
-![image-20220326105756387](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220326105756387.png)
+![image-20220326105756387](C:\Users\L\Desktop\文档\photo\image-20220326105756387-16511124826842.png)
 
 ### vue-router路由
 
