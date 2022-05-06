@@ -620,6 +620,27 @@ set开头都是s
 
 #### **Hash**
 
+value: 又是一个K-V
+
+涉及opsForHash()
+
+```java
+//单个的方式写入redis
+redisTemplate.opsForHash().put("map1", "k1", "value1");
+//声明的方式写入redis
+redisTemplate.opsForHash().putAll("map2", map);
+//redis 的key 把map给删除了
+redisTemplate.delete("map1");
+//根据redis 的key 判断hash是否存在,有返回true， 不存在返回false
+redisTemplate.hasKey("map2");
+//redis的key和map的key
+redisTemplate.opsForHash().hasKey("map2", "k4");
+//根据redis的key 和hash 的key 删除当个 value
+redisTemplate.opsForHash().delete("map2", "k5");
+//keys方法，获取key对应的hash表的所有键值对
+Map<Object, Object> entries = redisTemplate.opsForHash().entries("k1");
+```
+
 
 
 #### **Zset**
@@ -638,11 +659,48 @@ set开头都是s
 
 
 
+#### 关于pipeline的使用
 
+```java
+Set<String> keys = redisTemplate.keys("*");
+redisTemplate.delete(keys);
+StopWatch stopWatch = new StopWatch();
+stopWatch.start("使用pipeline");
 
+long startTime = System.currentTimeMillis();
+StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+List list = redisTemplate.executePipelined(new RedisCallback<Object>() {
+    @Override
+    public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
+        for (int i = 0; i < 100000; i++) {
+            String key = "测试" + String.valueOf(i);
+            redisConnection.hSet(stringRedisSerializer.serialize("lalala1"),stringRedisSerializer.serialize(key),stringRedisSerializer.serialize("666666"));
+        }
+        return null;
+    }
+},stringRedisSerializer);
 
+long endTime = System.currentTimeMillis();
+long costTime = endTime - startTime;
+System.out.println(costTime);
+stopWatch.stop();
+Set<String> keys1 = redisTemplate.keys("*");
+redisTemplate.delete(keys1);
+stopWatch.start("不使用pipeline");
+long startTime2 = System.currentTimeMillis();
+for (int i = 0; i < 100000; i++) {
+    String key = "测试" + String.valueOf(i);
+    redisTemplate.opsForHash().put("lalala2",key,"666666");
+}
+long endTime2 = System.currentTimeMillis();
+long costTime2 = endTime2 - startTime2;
+System.out.println(costTime2);
+stopWatch.stop();
+```
 
+效果
 
+![image-20220506161553380](C:\Users\L\Desktop\文档\photo\image-20220506161553380.png)
 
 ## 什么是redis？
 

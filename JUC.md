@@ -273,7 +273,9 @@ public ReentrantLock(boolean fair) {
 
 ### 4.生产者和消费者
 
+synchronized wait nofity:synchronized版本，这次用juc版
 
+等待，业务，通知
 
 ### 5.8锁的现象
 
