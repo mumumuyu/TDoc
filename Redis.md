@@ -641,11 +641,39 @@ redisTemplate.opsForHash().delete("map2", "k5");
 Map<Object, Object> entries = redisTemplate.opsForHash().entries("k1");
 ```
 
-
-
 #### **Zset**
 
+有序集合zset与set 类似，是一个没有重复元素的字符串集合
 
+与set不同的是zset是有序的，访问有序集合的中间元素也很快，因为能够使有序集合作为一个没有重复成员的智能列表
+
+```bash
+[root@lgdlgd123 //]# redis-cli -p 6379
+127.0.0.1:6379> zadd myset 1 one
+(integer) 1
+#这里2，3为下标？
+127.0.0.1:6379> zadd myset 2 two 3 three
+(integer) 2
+127.0.0.1:6379> zrange myset 0 -1
+1) "one"
+2) "two"
+3) "three"
+#使用zadd形式增加 key 序号 value
+127.0.0.1:6379> zadd salary 2500 lgd
+(integer) 1
+127.0.0.1:6379> zadd salary 3000 lgd2
+#按照序号打印出所有value	从小到大
+127.0.0.1:6379> zrangebyscore salary -inf +inf
+1) "lgda"
+2) "lgd"
+3) "lgd2"
+#显示全部的用户从大到小
+127.0.0.1:6379> zrevrange salary 0 -1
+1) "lgd2"
+2) "lgd"
+3) "lgda"
+
+```
 
 #### **geospatial**
 
@@ -701,6 +729,36 @@ stopWatch.stop();
 效果
 
 ![image-20220506161553380](C:\Users\L\Desktop\文档\photo\image-20220506161553380.png)
+
+一些用法
+
+```java
+//hash
+List list = redisTemplate3.executePipelined(new RedisCallback<Object>() {
+                    @Override
+                    public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
+                        for (String num:nums) {
+                            redisConnection.hSet(stringRedisSerializer.serialize(finalKeyName),
+                                                stringRedisSerializer.serialize(num),
+                                                stringRedisSerializer.serialize("1"));
+                        }
+                        return null;
+                    }
+                },stringRedisSerializer);
+//string
+List list = redisTemplate3.executePipelined(new RedisCallback<Object>() {
+                    @Override
+                    public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
+                        for (String num:nums) {
+                            redisConnection.set(stringRedisSerializer.serialize(num),
+                                                stringRedisSerializer.serialize("1"));
+                        }
+                        return null;
+                    }
+                },stringRedisSerializer);
+```
+
+
 
 ## 什么是redis？
 
