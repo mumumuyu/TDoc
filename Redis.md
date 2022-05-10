@@ -862,3 +862,46 @@ appendfsync everysec #每秒同步一次，可能丢失这1s
 
 ### 集群配置
 
+只配置从库，不配置主库
+
+可以通过info replication查看相关
+
+```bash
+[root@lgdlgd123 ~]# redis-cli -p 6379
+127.0.0.1:6379> info replication
+# Replication
+role:master #角色 master 
+connected_slaves:0	#没有从机
+master_failover_state:no-failover
+master_replid:384f4827d2ce133af141dbb08dbaf0949eee8a09
+master_replid2:cf7ebcb7d4f3ed22edd3b9f9164b6e15992ac547
+master_repl_offset:0
+second_repl_offset:1
+repl_backlog_active:0
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:0
+repl_backlog_histlen:0
+```
+
+本地集群搭建，基本就是配置一下conf
+
+这之中较为重要的配置：
+
+- 开启cluster-enable 和 appendonly yes
+- slaveof ip port,也可以不配置
+
+再加以使用Ruby
+
+效果
+
+ruby集群
+
+![image-20220510211045929](C:\Users\L\Desktop\文档\photo\image-20220510211045929.png)
+
+主
+
+![image-20220510211031246](C:\Users\L\Desktop\文档\photo\image-20220510211031246.png)
+
+从
+
+![image-20220510211012917](C:\Users\L\Desktop\文档\photo\image-20220510211012917.png)
