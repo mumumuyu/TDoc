@@ -116,13 +116,13 @@ KV键值对
 
 - 放的是关系
 
-![image-20220405154611414](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220405154611414.png)
+![image-20220405154611414](C:\Users\L\Desktop\文档\photo\image-20220405154611414.png)
 
 安装嘛就不说啦，之前就自己装好了
 
 ### win&linux
 
-![image-20220405160111273](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220405160111273.png)
+![image-20220405160111273](C:\Users\L\Desktop\文档\photo\image-20220405160111273.png)
 
 ```
 //简单玩玩
@@ -268,6 +268,17 @@ move name 1 // 移动1到数据库1
 
 字符操作
 
+数据结构是相同的
+
+String类似的使用场景:value除了字符串还可以是数字
+
+- 计数器
+- 统计多单位的数目 id:110:follow 0
+- 粉丝数
+- 对象缓存存储
+
+![image-20220512130543675](C:\Users\L\Desktop\文档\photo\image-20220512130543675.png)
+
 ```bash
 127.0.0.1:6379> set age 13
 OK
@@ -400,21 +411,28 @@ OK
 "lgd"
 ```
 
-数据结构是相同的
-
-String类似的使用场景:value除了字符串还可以是数字
-
-- 计数器
-- 统计多单位的数目 id:110:follow 0
-- 对象缓存存储
-
 #### **List**
+
+![image-20220512130601244](C:\Users\L\Desktop\文档\photo\image-20220512130601244.png)
+
+- 它实际上是一个链表，before Node after , left ,right都可以插入值
+- 如果key不存在就创建一个新的链表，存在就增加内容
+- 如果移除了所有的值，空链表，也代表不存在
+- 在两边插入或者改动值效率最高，中间元素相对效率会低一点
+
+消息队列，左边进去左边拿就是栈 lpush lpop
+
+左边进去右边出来就是消息队列lpush rpop
 
 是一种基本的数据类型，列表，可以重复
 
 在redis可以把list变成栈，队列，阻塞队列
 
 l开头意味着从左边操作，r开头意味着右边开始操作
+
+> Redis列表是简单的字符串列表，按照插入顺序排序。你可以添加一个元素到列表的头部（左边）或者尾部（右边）
+>
+> 一个列表最多可以包含 232 - 1 个元素 (4294967295, 每个列表超过40亿个元素)。
 
 ```bash
 127.0.0.1:6379[1]> lpush list one
@@ -537,24 +555,19 @@ OK
 6) "element1"
 ```
 
-![image-20220407084219753](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220407084219753.png)
-
-小结：
-
-- 它实际上是一个链表，before Node after , left ,right都可以插入值
-- 如果key不存在就创建一个新的链表，存在就增加内容
-- 如果移除了所有的值，空链表，也代表不存在
-- 在两边插入或者改动值效率最高，中间元素相对效率会低一点
-
-消息队列，左边进去左边拿就是栈 lpush lpop
-
-左边进去右边出来就是消息队列lpush rpop
+![image-20220407084219753](C:\Users\L\Desktop\文档\photo\image-20220407084219753.png)
 
 #### **Set**
 
+![image-20220512130618997](C:\Users\L\Desktop\文档\photo\image-20220512130618997.png)
+
 set中的值不可以重复，比如java里可以用equals进行比较
 
-set开头都是s
+Redis的Set是string类型的无序集合。集合成员是唯一的
+
+> Redis 中 集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是O(1)。
+>
+> 集合中最大的成员数为 232 - 1 (4294967295, 每个集合可存储40多亿个成员)。
 
 ```bash
 #set里添加元素
@@ -620,9 +633,13 @@ set开头都是s
 
 #### **Hash**
 
+![image-20220512130654644](C:\Users\L\Desktop\文档\photo\image-20220512130654644.png)
+
 value: 又是一个K-V
 
 redistemplate使用时涉及opsForHash()
+
+> hash 是一个string类型的field和value的映射表，hash特别适合用于存储对象。Set就是一种简化的Hash,只变动key,而value使用默认值填充。可以将一个Hash表作为一个对象进行存储，表中存放对象的信息。
 
 ```java
 //单个的方式写入redis
@@ -643,7 +660,13 @@ Map<Object, Object> entries = redisTemplate.opsForHash().entries("k1");
 
 #### **Zset**
 
-命令基本与z相关
+![image-20220512130715976](C:\Users\L\Desktop\文档\photo\image-20220512130715976.png)
+
+> 不同的是每个元素都会关联一个double类型的分数（score）。redis正是通过分数来为集合中的成员进行从小到大的排序。
+>
+> score相同：按字典顺序排序
+>
+> 有序集合的成员是唯一的,但分数(score)却可以重复。
 
 有序集合zset与set 类似，是一个没有重复元素的字符串集合
 
@@ -677,55 +700,206 @@ Map<Object, Object> entries = redisTemplate.opsForHash().entries("k1");
 
 ```
 
+### 三种特殊数据类型
+
 #### **geospatial**
 
+> 使用经纬度定位地理坐标并用zset保存
 
+![image-20220512131335750](C:\Users\L\Desktop\文档\photo\image-20220512131335750.png)
+
+**有效经纬度**
+
+> - 有效的经度从-180度到180度。
+> - 有效的纬度从-85.05112878度到85.05112878度。
+
+指定单位的参数 **unit** 必须是以下单位的其中一个：
+
+- **m** 表示单位为米。
+- **km** 表示单位为千米。
+- **mi** 表示单位为英里。
+- **ft** 表示单位为英尺。
+
+**GEORADIUS:可以通过该类型完成“附近的人“的功能**
+
+- withcoord: 坐标
+- withdist: 距离，单位与半径相同
+- count: n 按距离递增显示前几个
 
 #### **hyperloglogs**
 
+>Redis HyperLogLog 是用来做**基数统计**的算法，HyperLogLog 的优点是，在输入元素的数量或者体积非常非常大时，计算基数所需的空间总是固定的、并且是很小的。
+>
+>花费 12 KB 内存，就可以计算接近 2^64 个不同元素的基数。
+>
+>因为 HyperLogLog 只会根据输入元素来计算基数，而不会储存输入元素本身，所以 HyperLogLog 不能像集合那样，返回输入的各个元素。
+>
+>其**底层使用string数据类型**
 
+**基数**：**数据集中不重复的元素的个数**
 
-#### **bitmaps**
+应用：一个用户多次访问也只算一个
 
+![image-20220512132525731](C:\Users\L\Desktop\文档\photo\image-20220512132525731.png)
 
+#### **bitmaps**位图
+
+使用位存储，如Boolean，状态只为0 and 1。
+
+应用：签到统计，状态统计这种数值类型为boolean的
+
+![image-20220512132516064](C:\Users\L\Desktop\文档\photo\image-20220512132516064.png)
+
+bitmaps的底层是一串从左到右的二进制串
+
+### 事务
+
+redis的事务是一组操作set,get,xxx的集合
+
+它保证单条命令的原子性，但是不保证事务的原子性。
+
+- 一次性
+- 顺序性
+- 排他性
+
+#### **事务操作过程**
+
+- 开启事务（multi）
+- 命令入队
+- 执行（exec）
+
+由此看出，事务的命令只有在提交后才会执行，并一次性完成
+
+### 监控
+
+#### 悲观锁
+
+- 很悲观，认为什么时候都会出现问题，所以什么都加锁，由此效率相对不高
+
+#### 乐观锁
+
+- 很乐观，认为什么时候都不会有问题，所以不上锁，那么效率自然相对更高。可以通过时间戳(timestamp)比如增加一个版本(version)，如果提交版本比当前版本小那就驳回。
+
+使用**watch** **key** 监控指定数据，相当于乐观锁加锁
+
+使用**unwatch**进行解锁
+
+### Jedis
+
+相关依赖
+
+```xml
+<dependency>
+		<groupId>redis.clients</groupId>
+		<artifactId>jedis</artifactId>
+		<version>3.2.0</version>
+</dependency>
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>fastjson</artifactId>
+    <version>1.2.70</version>
+</dependency>
+```
+
+事务操作范例
+
+```java
+public class TestTX {
+    public static void main(String[] args) {
+        Jedis jedis = new Jedis("39.99.xxx.xx", 6379);
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("hello", "world");
+        jsonObject.put("name", "kuangshen");
+        // 开启事务
+        Transaction multi = jedis.multi();
+        String result = jsonObject.toJSONString();
+        // jedis.watch(result)
+        try {
+            multi.set("user1", result);
+            multi.set("user2", result);
+            // 执行事务
+            multi.exec();
+        }catch (Exception e){
+            // 放弃事务
+            multi.discard();
+        } finally {
+            // 关闭连接
+            System.out.println(jedis.get("user1"));
+            System.out.println(jedis.get("user2"));
+            jedis.close();
+        }
+    }
+}
+```
+
+### SpringBoot整合
+
+boot2.x后,原来的Jedis被lettuce替换
+
+- jedis:采用直接，多线程操作并不安全，如果想要避免不安全，使用jedisPool连接池，BIO模式
+- lettuce:
 
 ### 关于pipeline的使用
 
+其中使用RedisConnection操作，差不多
+
+以下为将一个List里数据，插入1000000~1999999（百万级数据），达到3次则筛出
+
 ```java
-Set<String> keys = redisTemplate.keys("*");
-redisTemplate.delete(keys);
 StopWatch stopWatch = new StopWatch();
-stopWatch.start("使用pipeline");
+        stopWatch.start("使用pipeline");
 
-long startTime = System.currentTimeMillis();
-StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-List list = redisTemplate.executePipelined(new RedisCallback<Object>() {
-    @Override
-    public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
-        for (int i = 0; i < 100000; i++) {
-            String key = "测试" + String.valueOf(i);
-            redisConnection.hSet(stringRedisSerializer.serialize("lalala1"),stringRedisSerializer.serialize(key),stringRedisSerializer.serialize("666666"));
+        long startTime = System.currentTimeMillis();
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        List<String> nums = new ArrayList<>();
+        for (int i = 0; i < 1000000; i++) {
+            nums.add(String.valueOf(i+1000000));
         }
-        return null;
-    }
-},stringRedisSerializer);
+        if(!redisTemplate.hasKey("lalala1")) {
+            //大概9秒,10837ms
+            List list = redisTemplate.executePipelined(new RedisCallback<Object>() {
+                @Override
+                public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
+                    for (String num : nums) {
+                        redisConnection.hSet(stringRedisSerializer.serialize("lalala1"), stringRedisSerializer.serialize(num), stringRedisSerializer.serialize("1"));
+                    }
+                    return null;
+                }
+            }, stringRedisSerializer);
+        }else {
+            //在进行较多逻辑判断后100万条数据的插入筛选合计大约150秒,147288ms,149070ms,148190ms(全部为3，把list元素全部逐个移除)
+            //优化后约103771ms
+            String finalKeyName1 = "lalala1";
+            List list = redisTemplate.executePipelined(new RedisCallback<Object>() {
+                @Override
+                public Object doInRedis(RedisConnection redisConnection) throws DataAccessException {
+                    Iterator<String> it = nums.iterator();
+                    while (it.hasNext()) {
+                        String num = it.next();
+                        if (!redisTemplate.opsForHash().hasKey(finalKeyName1, num)) {
+                            redisConnection.hSet(stringRedisSerializer.serialize(finalKeyName1),
+                                    stringRedisSerializer.serialize(num),
+                                    stringRedisSerializer.serialize("1"));
+                        } else {
+                            //存在，则判断是否为3了,等于就丢掉
+                            if (((Integer) redisTemplate.opsForHash().get(finalKeyName1, num)) == 3) {
+                                it.remove();
+                            } else {
+                                redisConnection.hIncrBy(stringRedisSerializer.serialize(finalKeyName1),
+                                        stringRedisSerializer.serialize(num),1);
+                            }
+                        }
+                    }
+                    return null;
+                }
+            }, stringRedisSerializer);
+        }
 
-long endTime = System.currentTimeMillis();
-long costTime = endTime - startTime;
-System.out.println(costTime);
-stopWatch.stop();
-Set<String> keys1 = redisTemplate.keys("*");
-redisTemplate.delete(keys1);
-stopWatch.start("不使用pipeline");
-long startTime2 = System.currentTimeMillis();
-for (int i = 0; i < 100000; i++) {
-    String key = "测试" + String.valueOf(i);
-    redisTemplate.opsForHash().put("lalala2",key,"666666");
-}
-long endTime2 = System.currentTimeMillis();
-long costTime2 = endTime2 - startTime2;
-System.out.println(costTime2);
-stopWatch.stop();
+        long endTime = System.currentTimeMillis();
+        long costTime = endTime - startTime;
+        System.out.println(costTime);
+        stopWatch.stop();
 ```
 
 效果
