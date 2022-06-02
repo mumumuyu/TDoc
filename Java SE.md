@@ -1,5 +1,13 @@
 # Java SE
 
+### **疑点回顾**
+
+#### 重写了equals()为什么还要重写hashCode()
+
+首先来说说hashCode()，也就是散列值，任意的输入通过哈希函数会得到一个唯一的输出，这就是哈希值。
+
+
+
 javadoc -encoding utf-8 -charset utf-8 Test.java
 
 可产生说明文档
@@ -1960,4 +1968,102 @@ GUI(FX)
 - Stream
 - ForkJoin
   - 效率对比
+
+### Java8：
+
+#### Lambda参考多线程里，我貌似写了
+
+#### Stream流
+
+利用函数式编程，在集合类上进行复杂操作，是以内部迭代的方式处理集合数据的操作，内部迭代可以将更多的控制权交给集合类。Stream 和 Iterator 的功能类似，只是 Iterator 是以外部迭代的形式处理集合数据的操作。
+
+比如我以前操作一个List里多条数据，需要用Iterator进行筛选判断，而现在，我可以使用流，把筛查条件作为实现函数式接口的部分。
+
+Java 8 新提供给开发者的一组操作集合的 API，将要处理的元素集合看作一种流， 流在管道中传输， 并且可以在管道的节点上进行处理， 比如筛选、排序、聚合等。元素流在管道中经过中间操作(intermediate operation)的处理，最后由终端操作 (terminal operation) 得到前面处理的结果。Stream 流可以极大的提高开发效率，也可以使用它写出更加简洁明了的代码。
+
+主要用于查出来的数据进行一个查询筛选
+
+创建流方法
+
+- list.stream()
+- parallelStream()
+- 静态的Stream.of()、Stream.empty()
+
+1.intermediate  operation 中间操作：中间操作的结果是刻画、描述了一个Stream，并没有产生一个新集合，这种操作也叫做惰性求值方法。
+
+2.terminal operation 终止操作：最终会从Stream中得到值。
+
+![image-20220602140738060](C:\Users\L\Desktop\文档\photo\image-20220602140738060.png)
+
+常用Stream流操作
+
+- 把Array->Stream:Stream.of(xxx[]).collect(toList());
+
+  由Stream中的值生成一个List列表，也可用collect(toSet())
+
+  ```java
+  		String[] testStrings = { "java", "react", "angular", "vue" };
+  		
+  		List<String> list = Stream.of(testStrings).collect(Collectors.toList());
+   
+  		for (int i = 0, length = list.size(); i < length; i++) {
+  			System.out.println(list.get(i));
+  		}
+  ```
+
+- map中间操作
+
+  ```java
+  //全部转大写
+          List<String> collect = Stream.of(testStrings).map(test -> test.toUpperCase()).collect(toList());
+  ```
+
+- filter筛选
+
+  ```java
+  //筛选
+          long j = collect.stream().filter(p -> p.startsWith("J")).count();
+  ```
+
+- flatMap 中间操作
+
+  可用 Stream 替换值，并将多个 Stream 流合并成一个 Stream 流。
+
+- 终止操作,max,min,reduce
+
+  ```java
+  String[] testStrings = { "java", "react", "angular", "javascript", "vue" };
+  		
+  		Optional<String> max = Stream.of(testStrings).max((p1, p2) -> Integer.compare(p1.length(), p2.length()));
+  
+  int sum = Stream.of(5, 6, 7, 8).reduce(0,
+                                         (accumulator, element) -> accumulator + element);
+  System.out.println(sum);
+  ```
+
+  reduce方法的第一个参数值 0 是初始值，第二个lambda表达式参数 (accumulator, element) -> accumulator + element 是执行求和操作，其中 accumulator 是累加器，element 是每次迭代的当前元素数值。
+
+实战示例
+
+- 分类(group by)
+
+  ```java
+  Map<String,Map<Integer, List<Student>>> collect2 = students.stream().collect(Collectors.groupingBy(i -> i.getName(),Collectors.groupingBy(i -> i.getCount())));
+  
+          for(String groupName:collect.keySet()){
+              System.out.println(groupName);
+              for(Integer count:collect2.get(groupName).keySet()) {
+                  System.out.println(count);
+                  collect2.get(groupName).get(count).forEach(student -> System.out.println(student));
+              }
+          }
+  ```
+
+  效果如下
+
+  ![image-20220602161722082](C:\Users\L\Desktop\文档\photo\image-20220602161722082.png)
+
+- 过滤(where xxx and xxx )and 可以用&& ，or 可以用||
+
+  
 
