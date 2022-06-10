@@ -806,3 +806,138 @@ InputStream ins = this.getClass().getClassLoader().getResourceAsStream("template
 File file = new File(ins);
 ```
 
+### 异步任务
+
+这次开发有个接口在一张有4亿条数据的表中做四次sql，十分耗时，所以需要使用**异步调用**，之前会自己维护一个线程池，然后异步调用，但是在Spring环境下可以一个@Async轻松搞定。
+
+@Async
+
+基于@Async标注的方法，称之为异步方法；这些方法将在执行的时候，将会在独立的线程中被执行，调用者无需等待它的完成，即可继续其他的操作
+
+AsyncConfig示例
+
+```java
+@Configuration
+@EnableAsync // 开启异步调用功能，即使@Async注解生效
+public class AsyncConfig implements AsyncConfigurer {
+
+    private final static Logger log = Logger.getLogger(AsyncConfig.class);
+
+    @Bean(name = "default_async_pool", destroyMethod = "shutdown")
+    public ThreadPoolTaskExecutor defaultAsyncPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        // 设置线程池前缀：方便排查
+        executor.setThreadNamePrefix("default-async-");
+        // 设置线程池的大小
+        executor.setCorePoolSize(10);
+        // 设置线程池的最大值
+        executor.setMaxPoolSize(15);
+        // 设置线程池的队列大小
+        executor.setQueueCapacity(250);
+        // 设置线程最大空闲时间，单位：秒
+        executor.setKeepAliveSeconds(3000);
+        // 饱和策略
+        // AbortPolicy:直接抛出java.util.concurrent.RejectedExecutionException异常
+        // CallerRunsPolicy:若已达到待处理队列长度，将由主线程直接处理请求
+        // DiscardOldestPolicy:抛弃旧的任务；会导致被丢弃的任务无法再次被执行
+        // DiscardPolicy:抛弃当前任务；会导致被丢弃的任务无法再次被执行
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        return executor;
+    }
+
+    @Bean(name = "another_async_pool", destroyMethod = "shutdown")
+    public ThreadPoolTaskExecutor anotherAsyncPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("another-task-");
+        executor.setCorePoolSize(3);
+        executor.setMaxPoolSize(6);
+        executor.setQueueCapacity(5);
+        executor.setKeepAliveSeconds(10);
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        return executor;
+    }
+
+    /**
+     * 自定义异步线程池，若不重写，则使用默认的
+     */
+    @Override
+    public Executor getAsyncExecutor() {
+        return defaultAsyncPool();
+    }
+
+    /**
+     * 1.无参无返回值方法
+     * 2.有参无返回值方法
+     * 返回值为void的， 通过IllegalArgumentException异常, AsyncUncaughtExceptionHandler处理异常
+     * 3.有参有返回值方法
+     * 返回值是Future，不会被AsyncUncaughtExceptionHandler处理，需要我们在方法中捕获异常并处理
+     * 或者在调用方在调用Future.get时捕获异常进行处理
+     */
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        System.out.println("正在处理无返回值的@Async异步调用方法");
+        return (throwable, method, objects) -> {
+            log.info("Exception message - " + throwable.getMessage());
+            log.info("Method name - " + method.getName());
+            for (Object param : objects) {
+                log.info("Parameter value - " + param);
+            }
+        };
+    }
+
+}
+```
+
+写完咯
+
+示例
+
+controller层
+
+```java
+Future<String> count = service.oracleCount();
+            Future<List<Map<String, Object>>> mapList = service.oracleOldestData();
+            Future<String> newTime = service.oracleNewTime();
+            Boolean result = false;
+            while (!result) {
+                Thread.sleep(1000);
+                if (count.isDone() && mapList.isDone() && newTime.isDone()) {
+                    //通过Future的isDone方法来查询Future是否执行完毕
+                    result = true;
+                    break;
+                }
+            }
+```
+
+service层
+
+```java
+@Async
+    @Override
+    public Future<String> oracleCount() throws InterruptedException{
+        String count = jdbcTemplate.queryForObject(
+                "select count(1) from BMA_RT_CAMP_POSITION_DATA", String.class);
+        //按照自己实际所需的逻辑写方法代码即可，入参视实际情况而定
+        return new AsyncResult<String>(count);
+    }
+
+    @Async
+    @Override
+    public Future<List<Map<String, Object>>> oracleOldestData() throws InterruptedException{
+        List<Map<String, Object>> mapList = jdbcTemplate.queryForList(
+                "select a.CAMP_ID,a.TIMESTAMP from BMA_RT_CAMP_POSITION_DATA a where TIMESTAMP =\n" +
+                        "(select min(TIMESTAMP) from BMA_RT_CAMP_POSITION_DATA where USED = '0')");
+        return new AsyncResult<>(mapList);
+    }
+
+    @Async
+    @Override
+    public Future<String> oracleNewTime() throws InterruptedException {
+        String newTime = jdbcTemplate.queryForObject(
+                "SELECT TO_CHAR(TO_DATE(SUBSTR(MAX_TIME,1,14),'YYYYMMDDHH24MISS'),'YYYY-MM-DD HH24:MI:SS') FROM ( " +
+                        "select max(TIMESTAMP) AS MAX_TIME from BMA_RT_CAMP_POSITION_DATA)", String.class);
+        //按照自己实际所需的逻辑写方法代码即可，入参视实际情况而定
+        return new AsyncResult<String>(newTime);
+    }
+```
+

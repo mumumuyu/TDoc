@@ -1,10 +1,10 @@
-# Java SE
+Java SE
 
 ### **疑点回顾**
 
 #### 重写了equals()为什么还要重写hashCode()
 
-首先来说说hashCode()，也就是散列值，任意的输入通过哈希函数会得到一个唯一的输出，这就是哈希值。
+首先来说说hashCode()，也就是散列值，任意的输入通过哈希函数会得到一个唯一的输出，这就是哈希值。equals比较的是两个对象
 
 
 
@@ -1971,6 +1971,11 @@ GUI(FX)
 
 ### Java8：
 
+新特性：
+
+1. 接口里可以用default,进行扩展方法
+2. 
+
 #### Lambda参考多线程里，我貌似写了
 
 #### Stream流
@@ -2043,7 +2048,24 @@ Java 8 新提供给开发者的一组操作集合的 API，将要处理的元素
 
   reduce方法的第一个参数值 0 是初始值，第二个lambda表达式参数 (accumulator, element) -> accumulator + element 是执行求和操作，其中 accumulator 是累加器，element 是每次迭代的当前元素数值。
 
-实战示例
+##### 实战示例
+
+测试数据
+
+```java
+public static Student student;
+    public static List<Student> students = new ArrayList<>();
+
+    static {
+        students.add(new Student("lgd1","语文",100,1));
+        students.add(new Student("lgd3","语文",300,2));
+        students.add(new Student("lgd2","语文",90,1));
+        students.add(new Student("lgd4","数学",100,1));
+        students.add(new Student("lgd5","英文",130,1));
+    }
+```
+
+
 
 - 分类(group by)
 
@@ -2064,6 +2086,164 @@ Java 8 新提供给开发者的一组操作集合的 API，将要处理的元素
   ![image-20220602161722082](C:\Users\L\Desktop\文档\photo\image-20220602161722082.png)
 
 - 过滤(where xxx and xxx )and 可以用&& ，or 可以用||
+
+  ```java
+  //全部name转大写
+  long count = students.stream().map(student -> {
+              student.setName(student.getName().toUpperCase());
+              return null;
+          }
+  ).count();
+  ```
+  
+  ![image-20220609102109683](C:\Users\L\Desktop\文档\photo\image-20220609102109683.png)
+  
+  筛选lgd1的分数大于100的数据
+  
+- list转map与map转list
+
+  ```java
+  //List转map, (k1,k2)->k2 避免键重复 k1-取第一个数据；k2-取最后一条数据
+          Map<String, String> deviceMap = students.stream().collect(Collectors.toMap(i -> i.getName(), j -> j.getSubject(), (k1, k2) -> k1));
+  
+          System.out.println(deviceMap.get("lgd1"));
+  
+          //在.map里面构造数据 return什么数据就转成什么类型的list
+          List<Student> collectStu = deviceMap.entrySet().stream().map(item -> {
+              Student student = new Student();
+              student.setName(item.getKey());
+              student.setSubject(item.getValue());
+              return student;
+          }).collect(Collectors.toList());
+  
+          for (Student student:collectStu) {
+              System.out.println(student);
+          }
+  ```
+
+- 求和与极值
+
+  ```java
+  //在egyList里面求cols的和
+  public static BigDecimal getSumBig(List<Map<String,Object>> egyList, String cols){
+          BigDecimal consuBig = egyList.stream()
+                  .filter((Map m)->StringUtils.isNotEmpty(m.get(cols)+"") && !"null".equals(String.valueOf(m.get(cols)))
+                          && !"-".equals(String.valueOf(m.get(cols))))
+                  .map((Map m)->new BigDecimal(m.get(cols)+""))
+                  .reduce(BigDecimal.ZERO,BigDecimal::add);
+          return consuBig;
+  }
+  
+  //求和与获取极值
+  Integer sum = students.stream().mapToInt(Student::getScore).sum();
+  OptionalInt optionalMax = students.stream().mapToInt(Student::getScore).max();
+  System.out.println(optionalMax.getAsInt());
+  System.out.println(sum);
+  ```
+
+- 获取最大值或者最小值的对象
+
+  ```java
+  //找到有最大分数的对象
+  Optional<Student> optional = students.stream().max(Comparator.comparing(Student::getScore));
+          if (optional.isPresent()) { // 判断是否有值
+              Student student = optional.get();
+          }
+          System.out.println(optional.orElse(new Student()));
+  ```
+
+  ![image-20220610145917263](C:\Users\L\Desktop\文档\photo\image-20220610145917263.png)
+
+- 去重
+
+  ```java
+  List<String> strings = new ArrayList<>();
+          strings.add("a");
+          strings.add("b");
+          strings.add("b");
+          //去重
+          //去重之后进行拼接:
+          String s = strings.stream().distinct().collect(Collectors.joining(","));
+          System.out.println(s);
+  
+          List<String> sIdList = strings.stream().distinct().collect(Collectors.toList());
+  
+          for (String s1:sIdList){
+              System.out.println(s1);
+          }
+  ```
+
+  ![image-20220610150726458](C:\Users\L\Desktop\文档\photo\image-20220610150726458.png)
+
+- 排序
+
+  ```java
+  //Integer
+  Collections.sort(students, Comparator.comparing(Student::getCount));
+  
+  //String
+  Collections.sort(students, (p1, p2) -> {
+              return Integer.parseInt(String.valueOf(p1.getName().compareTo(p2.getName() + "")));
+          });
+  ```
+
+  ![image-20220610152528365](/image-20220610152528365.png)
+
+- 拼接
+
+  ```java
+  //将某个字段,按照某个字符串拼接:  List<Map<String, Object>> deviceMapList 
+  String sns = deviceMapList.stream()
+       	.map((m)->m.get("sn")+"").collect(Collectors.joining(","));
+  
+  List<String> strs = Arrays.asList("a","b","cd");
+   
+          //连接所有内容
+          String str = strs.stream().collect(Collectors.joining());
+          System.out.println(str);
+          //输出：abcd
+   
+          //连接所有内容,中间加一个逗号隔开
+          String str1 = strs.stream().collect(Collectors.joining(","));
+          System.out.println(str1);
+          //输出：a,b,cd
+   
+          //连接所有内容,中间加一个逗号隔开，两边加上括号
+          String str2 = strs.stream().collect(Collectors.joining(",","(",")"));
+          System.out.println(str2);
+          //输出：(a,b,cd)
+  ```
+
+- 统计
+
+  ```java
+  //统计：和、数量、最大值、最小值、平均值: List<Employee> list
+          IntSummaryStatistics sumStatus = students.stream().collect(Collectors.summarizingInt(Student::getScore));
+          System.out.println("和：" + sumStatus.getSum());
+          System.out.println("数量：" + sumStatus.getCount());
+          System.out.println("最大值：" + sumStatus.getMax());
+          System.out.println("最小值：" + sumStatus.getMin());
+          System.out.println("平均值：" + sumStatus.getAverage());
+  
+  OptionalDouble average = students.stream().mapToInt(Student::getScore).average();
+          System.out.println(average.getAsDouble());
+  ```
+
+- 某个字段为对应值的个数
+
+  ```java
+  //List<Employee> list
+  Map<Integer, Long> collect3 = students.stream().collect(Collectors.groupingBy(i -> i.getScore(),Collectors.counting()));
+  for(Integer integer: collect3.keySet()){
+      System.out.println(integer + " " + collect3.get(integer));
+  }
+  ```
+
+  ![image-20220610155622707](/image-20220610155622707.png)
+
+  比如这里，分数为130的有两个
+
+- 分区
 
   
 
