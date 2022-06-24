@@ -273,15 +273,300 @@ public ReentrantLock(boolean fair) {
 
 ### 4.生产者和消费者
 
-synchronized wait nofity:synchronized版本，这次用juc版
+synchronized版 wait nofity:synchronized版本，这次用juc版
 
 等待，业务，通知
 
+> ​	生产者与消费者问题Synchronized
+
+下次一定
+
 ### 5.8锁的现象
+
+其实就是加深一下到底锁的是什么
+
+```java
+/**
+ * @Description: 8锁，就是锁的8个问题
+ *                 1、标准情况下，两个线程先后
+ *                 当然并不是先调用就先执行，而是由于锁的存在
+ *                 由于一个对象只有一个锁，所以谁先拿到锁，谁先执行
+ *
+ * @author: LGD
+ * @date:2022/6/23 14:05
+ */
+public class Test1 {
+    public static void main(String[] args) {
+        Phone phone = new Phone();
+        new Thread(()->{
+            phone.sendSms();
+        },"A").start();
+
+        try {
+            TimeUnit.SECONDS.sleep(1);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+
+        new Thread(()->{
+            phone.call();
+        },"B").start();
+    }
+
+}
+
+class Phone{
+    //被synchronized修饰的对象是锁的调用者
+    //现在两个方法用的是同一把锁(一个对象只可以有一把锁)，谁先拿到，谁执行
+    public  synchronized void sendSms(){
+        try {
+            TimeUnit.SECONDS.sleep(4);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        System.out.println("sendSms");
+    }
+
+    public  synchronized void call(){
+        System.out.println("call");
+    }
+}
+
+/**
+ * @Description: 3.增加一个普通void先执行哪个？
+ *                  这里没有锁，就不是同步方法，不受锁的影响
+ *                  4.两个对象，两把锁，都被两位拿到，所以都可以执行
+ *                  所以synchronized锁的是this.Class这个对象
+ *
+ * @author: LGD
+ * @date:2022/6/23 14:05
+ */
+class Phone2{
+    //被synchronized修饰的对象是锁的调用者
+    //现在两个方法用的是同一把锁(一个对象只可以有一把锁)，谁先拿到，谁执行
+    public  synchronized void sendSms(){
+        try {
+            TimeUnit.SECONDS.sleep(4);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        System.out.println("sendSms");
+    }
+
+    public  synchronized void call(){
+        System.out.println("call");
+    }
+
+    //这里没有锁，就不是同步方法，不受锁的影响
+    public void hello(){
+        System.out.println("hello");
+    }
+}
+
+/**
+ * @Description: 5.两个静态同步方法，只有一个对象
+ *              6.两个对象，调用一个类的两个static synchronized方法
+ *                  那么此时，类在ClassLoader之后得到一个全局唯一的一个Class模板
+ *                  之后synchronized所的就是这个Class类模板
+ *
+ * @author: LGD
+ * @date:2022/6/23 14:05
+ */
+
+class Phone3{
+    //被synchronized修饰的对象是锁的调用者
+    //现在两个方法用的是同一把锁(一个对象只可以有一把锁)，谁先拿到，谁执行
+    //static 静态方法，在类加载的时候就有的了，Class模板
+    //而phone3唯一的一个class对象，此时锁的就是class模板
+    public static  synchronized void sendSms(){
+        try {
+            TimeUnit.SECONDS.sleep(4);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        System.out.println("sendSms");
+    }
+
+    public static synchronized void call(){
+        System.out.println("call");
+    }
+}
+
+/**
+ * @Description: 7.一个对象，两个同步方法，一个静态一个普通
+ *                 这次两个方法锁的不是一个，上面static锁的是class模板
+ *                 而普通synchornized锁的是当前类对象
+ * @author: LGD
+ * @date:2022/6/23 14:05
+ */
+
+class Phone4{
+    //静态同步锁的是Class类模板
+    public static synchronized void sendSms(){
+        try {
+            TimeUnit.SECONDS.sleep(4);
+        }catch (InterruptedException e){
+            e.printStackTrace();
+        }
+        System.out.println("sendSms");
+    }
+    //普通同步锁的是当前类对象this.class
+    public synchronized void call(){
+        System.out.println("call");
+    }
+
+    public void hello(){
+        System.out.println("hello");
+    }
+}
+```
+
+> 综合一下：
+
+- 两个synchronized 锁当前对象
+- 一个synchronized ，一个普通void,void不受影响
+- 两个static synchronized,锁Class模板
+- 一个synchronized,一个static synchronized锁的东西并不一样，一个类模板，一个当前对象，所以互不影响
+
+new 出来 this 是一个具体的对象
+
+static ClassLoader得到的一个全局唯一的类模板
 
 ### 6.集合类不安全
 
+在集合类，并发环境下进行修改就会出现
+
+java.util.ConcurrentModificationException
+
+面试问你一些经典异常，欸，为了体现咱们确实是干过活的，所以可以这么说
+
+比如**OutOfMemory**:堆内存溢出，一般是new了太多东西，或者两个过大的集合类进行操作的时候会出现
+
+**StackOverFlow**:栈溢出，这个也挺经典，因为我在JDBC学习的时候碰到过preparement的sql里只有3个？，而你setXXX了4个就会出现。
+
+还有这个**ConcurrentModificationException**，并发修改，在多线程
+
+List	add()最早1.2，Vector是1.0时候就有了，懂吧，我记得为什么由Vector(add 里面有synchronized)到ArrayList的原因，就是synchronized同步慢了。
+
+```java
+//并发下ArrayList并不安全，所以需要解决方案
+        //1.老集合就是Vector
+        //2.使用Collections.synchronizedList(new ArrayList<>())
+        //3.JUC包下ConCurrentXXX(并发的xxx)
+//        List<String> strings = Collections.synchronizedList(new ArrayList<>());
+        List<String> strings = new CopyOnWriteArrayList<>();
+```
+
+为什么JUC下的CopyOnWriteArrayList可以保证并发呢
+
+```java
+/** The array, accessed only via getArray/setArray. */
+    private transient volatile Object[] array;
+//点进CopyOnWriteArrayList，可以发现它通过transient跟volatile实现
+```
+
+##### CopyOnWriteArrayList(写入时复制)
+
+SE里面我有写，那再来一遍
+
+**transient** 
+
+当串行化某个对象时，如果该对象的某个变量是transient，那么这个变量不会被串行化进去。也就是说，假设某个类的成员变量是transient，那么当通过
+
+ObjectOutputStream把这个类的某个实例
+
+保存到磁盘上时，实际上transient变量的值是不会保存的。因为当从磁盘中读出这个对象的时候，对象的该变量会没有被赋值。
+
+**volatile (那必然要提到JMM了)** 
+
+JMM是java内存模型，抽象为一个主内存存储共享变量，其他每个线程会独占一部分本地内存，线程里面会有所需使用的主内存的共享变量的副本，然后线程在自己的区域内操作副本，当然这可能会导致在线程还没有把自己改变完的变量写入到主内存时候，然后其他线程不知道情况下使用了主内存老的数据的副本进行缓存，使用volatile可以保证单个共享变量读写可见性。
+
+同synchronized相比（synchronized通常称为重量级锁），volatile更轻量级
+
+它可以保证在线程自己的内存里对变量进行写入操作后可以强制在主内存进行刷新，让其他线程的缓存失效。
+
+它也禁止指令重排序
+
+它只能保证单个共享变量读写原子性，并不能保证num++这种复合操作。复合操作需要用到并发包里的原子操作类JUC，通过循环CAS方式保证原子性。
+
+```java
+public static AtomicInteger num = new AtomicInteger(0);
+```
+
+//CopyOnWriteArrayList(写入时复制) 	COW计算机程序设计领域的一种优化策略，多个线程调用的时候,list,读取的时候，
+
+多个线程调用时，
+
+//读写分离	写入的时候复制一个数组，写入完再进行插入 保证线程安全
+
+//为什么用CopyOnWriteArrayList 而不怎么用Vector
+
+**Vector**用了synchronized的方式实现，相对效率较低
+
+```java
+/**
+ * Sets the size of this vector. If the new size is greater than the
+ * current size, new {@code null} items are added to the end of
+ * the vector. If the new size is less than the current size, all
+ * components at index {@code newSize} and greater are discarded.
+ *
+ * @param  newSize   the new size of this vector
+ * @throws ArrayIndexOutOfBoundsException if the new size is negative
+ */
+public synchronized void setSize(int newSize) {
+    modCount++;
+    if (newSize > elementCount) {
+        ensureCapacityHelper(newSize);
+    } else {
+        for (int i = newSize ; i < elementCount ; i++) {
+            elementData[i] = null;
+        }
+    }
+    elementCount = newSize;
+}
+```
+
+而**CopyOnWriteArrayList** 用的lock锁，效率相对高，如下，先复制copyof，再写入setArray
+
+```java
+ /** * Appends the specified element to the end of this list. * * @param e element to be appended to this list * @return {@code true} (as specified by {@link Collection#add}) */public boolean add(E e) {    final ReentrantLock lock = this.lock;    lock.lock();    try {        Object[] elements = getArray();        int len = elements.length;        Object[] newElements = Arrays.copyOf(elements, len + 1);        newElements[len] = e;        setArray(newElements);        return true;    } finally {        lock.unlock();    } [ListTest.java](E:\IDEA\tests\Small-Tests\stream-test\src\main\java\com\lgd\juc\unsafe\ListTest.java) }
+```
+
+##### CopyOnWriteArraySet
+
+欸，有list,有Set，那肯定还有map。
+
+Set跟List，BlockingQuere(阻塞队列)都继承自Collection
+
+Set无序不可重复
+
+HashSet底层就是HashMap;
+
+add其本质就是
+
+```java
+public boolean add(E e) {
+    return map.put(e, PRESENT)==null;
+}
+```
+
+使用 Collections.synchronizedSet 方法来“包装” set
+
+再来补补短板
+
+Object中equals只要对象参数一致就true,而==比较的是地址。
+
+
+
+
+
+##### ConcurrentHashMap
+
+
+
 ### 7.Callable
+
+
 
 ### 8.CountDownLatch,CyclicBarrier,Semaphore
 
@@ -291,19 +576,29 @@ synchronized wait nofity:synchronized版本，这次用juc版
 
 ### 11.线程池
 
+
+
 ### 12.四大函数式接口
 
 ### 13.Stream流式计算
+
+
 
 ### 14.分支合并
 
 ### 15.异步回调
 
+
+
 ### 16.JMM
 
 ### 17.volatile
 
+
+
 ### 18.深入单例模式
+
+
 
 ### 19.深入理解CAS
 

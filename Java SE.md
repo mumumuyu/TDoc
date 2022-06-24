@@ -4,7 +4,56 @@ Java SE
 
 #### 重写了equals()为什么还要重写hashCode()
 
-首先来说说hashCode()，也就是散列值，任意的输入通过哈希函数会得到一个唯一的输出，这就是哈希值。equals比较的是两个对象
+首先来说说hashCode()，也就是散列值，任意的输入通过哈希函数会得到一个唯一的输出，这就是哈希值。equals比较的是两个对象是否是属性上的一致
+
+如果有3个Person类对象
+
+未重写Person的equals,hashCode的时候，即使值一样，equals仍然是false（因为对于Object的equals比较的还是地址）
+
+这时候重写equals变为属性一样就为true
+
+偶然看到，Integer的hashCode就是他的value，equals也就是比一下int值一样不
+
+重写过程
+
+```java
+//参考String重写的equals
+public boolean equals(Object anObject){
+        if (this == anObject) {
+            return true;
+        }
+        if (anObject instanceof Person) {
+            Person person = (Person) anObject;
+            if(person.name.equals(this.name) && person.age == this.age)
+                return true;
+        }
+        return false;
+    }
+
+
+```
+
+那么现在equals一样了，但是hashCode却不一样，
+
+重写一下hashCode()
+
+```java
+public int hashCode() {
+        final int prime = 31;  // 基数
+        int result = 1;
+        result = prime * result + age;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;            // 相同的数据，hashCode也相同。所以age与name相同时，result计算结果也相同。
+    }
+```
+
+现在值一样的对象，hashcode都一样，然后地址也一样，Integer.toHexString(hashCode())了
+
+**hashCode**与**equals**
+
+现在是可能感觉，是不是只要重写hashCode而不用equals就好了？也不对，因为hashCode并不可靠，有时候hashCode意外一样，而值并不完全一样的情况也是有的。但是hashCode可以辅助equals效率，如果两个对象hashCode不一样，那么这两个对象肯定不一样。
+
+Java中规定，**两个内容相同(equals()为true)的对象必须具有相等的hashCode**。因为如果equals()为true而两个对象的hashcode不同;那在整个存储过程中就发生了悖论。所以我们在重写equals时，也需要重写hashCode方法。
 
 
 
@@ -2239,7 +2288,7 @@ public static Student student;
   }
   ```
 
-  ![image-20220610155622707](/image-20220610155622707.png)
+  ![image-20220610155622707](./image-20220610155622707.png)
 
   比如这里，分数为130的有两个
 
