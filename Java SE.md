@@ -55,6 +55,12 @@ public int hashCode() {
 
 Java中规定，**两个内容相同(equals()为true)的对象必须具有相等的hashCode**。因为如果equals()为true而两个对象的hashcode不同;那在整个存储过程中就发生了悖论。所以我们在重写equals时，也需要重写hashCode方法。
 
+总之，我来说就是Object中equals和== 比较的都是地址，但是我们希望equals比较值，以值来区分对象是不是一个，所以我们重写了equals并进行比较值，hashCode此时也需要重写，不然会出现地址不同，但是equals却为true,而java规定，**两个内容相同(equals()为true)的对象必须具有相等的hashCode**。不然在整个存储过程中就发生了悖论，然后是hashCode重写后，这样地址和值都一样了。比如Integer，它的hashCode就是直接int的value，equals就直接比较value是否一样。一般我们自己new了一个对象可以通过各属性得到一个hashCode，然后在equals时先比较地址，hash值是否一样，一样的话直接为true增加效率，false再慢慢一个个比值。
+
+lombok的@Data帮我们简化了new一个对象后，需要重写hashCode和equals，toString（本来是输出一个对象的十六进制化的内存地址，现在我们希望得到它的属性详细信息）。@Data相当于@Getter @Setter @RequiredArgsConstructor @ToString @EqualsAndHashCode这5个注解的合集, 和@EqualsAndHashCode默认是false(就是只用自己的属性来生成hashcode)。为true的话就是用自己的属性和从父类继承的属性来生成hashcode.
+
+这里注意一下：比如一个父类，一个子类都有很多属性，然后都有@Data，此时equals比较的是子类的属性，如果都一样就都一样，这里我们可以通过@EqualsAndHashCode设置为true来解决
+
 
 
 javadoc -encoding utf-8 -charset utf-8 Test.java
@@ -2112,14 +2118,23 @@ public static Student student;
         students.add(new Student("lgd4","数学",100,1));
         students.add(new Student("lgd5","英文",130,1));
     }
+
+
+//或者
+		students.add(new Student("lgd1","语文",100,1));
+        students.add(new Student("lgd3","语文",300,2));
+        students.add(new Student("lgd2","语文",90,1));
+        students.add(new Student("lgd4","数学",100,1));
+        students.add(new Student("lgd5","英文",130,1));
+        students.add(new Student("lgd11","英文",130,3));
 ```
-
-
 
 - 分类(group by)
 
   ```java
-  Map<String,Map<Integer, List<Student>>> collect2 = students.stream().collect(Collectors.groupingBy(i -> i.getName(),Collectors.groupingBy(i -> i.getCount())));
+  Map<String,Map<String, List<Student>>> collect2 = students.stream().collect(Collectors.groupingBy(i -> i.getName()
+                  ,Collectors.groupingBy(i -> i.getCount() > 1 ? "首考" : "重修" )
+          ));
   
           for(String groupName:collect.keySet()){
               System.out.println(groupName);

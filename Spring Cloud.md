@@ -233,7 +233,7 @@ AP：一致性要求较低
 
 所以一个分布式系统不可能同时满足三个
 
-作为服务注册中心，Eureka比Zookeeper好在哪里
+作为服务注册中心，Eureka比Zookeeper好在哪里(包括治理中心和全托管注册/配置中心，如 Zookeeper、Eureka 和 Nacos)
 
 Zookeeper满足CP
 

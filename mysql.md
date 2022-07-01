@@ -269,16 +269,82 @@ innodb：支持事务，行级锁。5.6+后有全局索引，data与index一起�
 索引就是有排序的数据结构
 
 - 单索引5个以内
-
 - 禁止3个表以上的join
-
 - 重复和冗余的索引不可以存在
-
 - 字段数<=30
-
 - 索引必须要有default值，不可为空
-
 - verchar索引要制定其长度
-
 - 对于行数超过500w与容量超过2G的表要进行分表
+
+## 一些平时使用sql用法
+
+**问题：在进行oracle数据操作时，某条语句update很久不出。**
+
+这种只有update无法执行其他语句可以执行的其实是因为记录锁导致的，在oracle中，执行了update或者insert语句后，都会要求commit，如果不commit却强制关闭连接，oracle就会将这条提交的记录锁住。由于我的java程序中加了事务，之前debug到一半的时候我强制把工程终止了，这样就导致没有执行事务提交，所以oracle将代码中update那一条的记录锁了。可通过下面两步解决：
+
+**1.首先查询锁定记录**
+
+```
+SELECT s.sid, s.serial# FROM v$locked_object lo, dba_objects ao, v$session s WHERE ao.object_id = lo.object_id AND lo.session_id = s.sid;
+```
+
+**2.然后删除之**
+
+```
+ALTER system KILL session 'SID,serial#'
+```
+
+
+
+**关于COUNT(1)与COUNT(*)区别**
+
+一、count情况
+
+1、count(1)：可以统计表中所有数据，不统计所有的列，用1代表代码行，在统计结果中包含列字段为null的数据；其实就是计算一共有多少符合条件的行。1并不是表示第一个字段，而是表示一个固定值。其实就可以想成表中有这么一个字段，这个字段就是固定值1，count(1)，就是计算一共有多少个1。
+
+2、count(字段)：只包含列名的列，统计表中出现该字段的次数，并且不统计字段为null的情况；如果列为主键，count(列名)效率优于count，如果列不为主键，count(1)效率优于count(列名)，如果表中存在主键，count(主键列名)效率最优 ，如果表中只有一列，则count(*)效率最优，如果表有多列，且不存在主键，则count(1)效率优于c。
+
+3、count(*)：统计所有的列，相当于行数，统计结果中会包含字段值为null的列；执行时会把星号翻译成字段的具体名字，效果也是一样的，不过多了一个翻译的动作，比固定值的方式效率稍微低一些。
+
+二、count执行效率
+
+列名为主键，count(列名)比count(1)快；列名不为主键，count(1)会比count(列名)快；
+
+如果表中多个列并且没有主键，则count(1)的执行效率优于count(*)；
+
+如果有主键，则select count(主键)的执行效率是最优的；如果表中只有一个字段，则select  count(*)最优。
+
+阿里sql规范：
+
+- 代码编写充分考虑执行速度最优的原则。
+- 代码中需要添加必要的注释，以增强代码的可读性。
+- 规范要求并非强制性约束开发人员的代码编写行为。实际应用中，在不违反常规要求的前提下，允许存在可以理解的偏差。
+- SQL代码中应用到的所有SQL关键字、保留字都需使用全大写或小写，例如select/SELECT、from/FROM、where/WHERE、and/AND、or/OR、union/UNION、insert/INSERT、delete/DELETE、group/GROUP、having/HAVING和count/COUNT等。不能使用大小写混合的方式，例如Select或seLECT等方式。
+- 4个空格为1个缩进量，所有的缩进均为1个缩进量的整数倍，按照代码层次对齐。
+- 禁止使用select *操作，所有操作必须明确指定列名。
+- 对应的括号要求在同一列的位置上。
+
+以下因为我实习用的Oracle，所以基于oracle相关用法如下
+
+```sql
+-- merge into 范例
+merge into STATIS T1 using dual on ((select count(*) from XXX where ID = '10001') > 0)
+when matched then
+	update set T1.AVERAGE = '20000' , T1.STD='2' , T1.INSERT_TIME = TO_DATE( TO_CHAR( SYSDATE, 'YYYY-MM-DD' ), 'YYYY-MM-DD HH24:MI:SS' ) WHERE CAMP_ID='10001'
+when not matched then
+	Insert (ID,AVERAGE, STD,INSERT_TIME) VALUES('10001','10000','0',TO_DATE( TO_CHAR( SYSDATE, 'YYYY-MM-DD' ), 'YYYY-MM-DD HH24:MI:SS' ));
+	
+-- CASE WHEN 范例
+(
+	CASE	
+		WHEN T1.SEND_COUNT_TO_JYJ <= ( T2.AVERAGE + T2.STD ) 
+			AND T1.SEND_COUNT_TO_JYJ >= ( T2.AVERAGE - T2.STD ) 
+    	THEN
+			'1' ELSE '2' 
+	END 
+) AS CAMP_TRUE_TYPE
+
+-- UNION ALL 与 UNION区别也说一下吧，union all会去掉重复的数据
+
+```
 
