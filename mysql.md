@@ -324,6 +324,8 @@ ALTER system KILL session 'SID,serial#'
 - 禁止使用select *操作，所有操作必须明确指定列名。
 - 对应的括号要求在同一列的位置上。
 
+## **Oracle**
+
 以下因为我实习用的Oracle，所以基于oracle相关用法如下
 
 ```sql
@@ -348,3 +350,24 @@ when not matched then
 
 ```
 
+创建索引
+
+# 创建索引
+
+**单列索引：**
+
+单列索引是基于单个列所建立的索引，比如：
+
+create index 索引名 on 表名(列名);
+
+**复合索引：**
+
+复合索引是基于两列或是多列的索引。在同一张表上可以有多个索引，但是要求列的组合必须不同，比如：
+
+create index emp_idx1 on emp (ename, job);
+
+create index emp_idx1 on emp (job, ename);
+
+查询表索引
+
+select * from all_indexes where table_name = 'BMA_RT_CAMP_HOUR_SUM' 
