@@ -137,6 +137,7 @@ jdk1.6引入Domain，域，不同域有不同的操作权限，就好像Linux分
 - 1、栈也叫栈内存，主管Java程序的运行，是在线程创建时创建，它的生命期是跟随线程的生命期，线程结束栈内存也就释放。
 - 2、**对于栈来说不存在垃圾回收问题**，只要线程一旦结束，该栈就Over，生命周期和线程一致，是线程私有的。
 - 3、当栈调用深度大于栈深度时就会出现StackOverFlowError的错误，程序会停下来。
+- 4、若栈的深度是可扩展的（不够时申请内存）
 
 ![image-20220403210258221](C:\Users\L\Desktop\文档\photo\image-20220403210258221-16511122629592.png)
 
@@ -160,9 +161,9 @@ jdk1.6引入Domain，域，不同域有不同的操作权限，就好像Linux分
 
 ##### 10.三种JVM：
 
-Sun公司的HotSpot √本次所学
+Sun公司的**HotSpot** √本次所学
 
-BEA JRockit（Oracle的OpenJDK，最快的jvm，适合财务办公）
+BEA JRockit（Oracle的OpenJDK，最快的jvm，适合财务办公，企业应用）
 
 IBM j9 VM在Oracle开发的基础上开发的
 

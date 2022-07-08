@@ -371,3 +371,4 @@ create index emp_idx1 on emp (job, ename);
 查询表索引
 
 select * from all_indexes where table_name = 'BMA_RT_CAMP_HOUR_SUM' 
+

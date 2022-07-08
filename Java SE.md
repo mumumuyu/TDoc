@@ -2309,5 +2309,45 @@ public static Student student;
 
 - 分区
 
-  
+### java 锁
 
+Java（1.6+）中锁的状态一共有四种，级别由低到高分别是：**无锁、偏向锁、轻量级锁、重量级锁**，这几个状态会随着竞争情况逐渐升级，其中锁可以升级，但是不能降级。Java中加锁的最简单方式就是加synchronized关键字。
+
+早期synchronized锁就是重量级锁，但是JDK1.6之后，JVM为了提高锁的获取与释放效率，对synchronized进行了优化，引入了偏向锁和轻量级锁，根据线程竞争情况对锁进行升级，在线程竞争不激烈的情况避免使用重量级锁。
+
+![图片](http://inews.gtimg.com/newsapp_bt/0/13846791707/641)
+
+- 无锁：对象头中有31bit的空间来存储对象的hashcode，4bit用于存放对象分代年龄，1bit来表示是否是偏向锁，2bit存放锁标志位，偏向锁位与锁标志位合起来“001”就代表无锁。无锁就是没有对任何资源进行锁定，所有线程都能访问并修改资源。
+- 偏向锁：对象头中记录了获得偏向锁的线程ID，偏向锁与锁标志位合起来“101”就代表偏向锁。有研究发现，在大多数情况下，锁很少被多个线程同时竞争，而且总是由同一个线程多次获得，因此只需要将获得锁的线程ID写入到锁对象Mark Word中，相当于告诉其他线程，这块资源已经被我占了。当线程访问资源结束后，不会主动释放偏向锁，当线程再次需要访问资源时，JVM就会通过Mark Word中记录的线程ID判断是否是当前线程，如果是，则继续访问资源。所以，在没有其他线程参与竞争时，锁就一直偏向被当前线程持有，当前线程就可以一直占用资源或者执行代码。
+- **自旋锁**：一旦有另外一个线程参与锁竞争，偏向锁就会升级为自旋锁，此时撤销偏向锁，锁标志位变为“00”。竞争的两个线程都在各自的线程栈帧中生成一个Lock Record空间，用于存储锁对象目前Mark Word的拷贝，用CAS操作将Mark Word设置为指向自己这个线程的LR（Lock Record）指针，设置成功者获得锁，其他参与竞争的线程如果未获取到锁，则会一直处于自旋等待的状态，直到竞争到锁。
+- 重量级锁：长时间的自旋操作是很消耗CPU资源的，为了避免这种盲目的消耗，JVM会在有线程超过10次自旋，或者自旋次数超过CPU核数的一半（JDK1.6以后加入了自适应自旋-Adaptive Self Spinning，由JVM自己控制自旋次数）时，会升级到重量级锁。重量级锁底层是依赖操作系统的mutex互斥锁，也就是有操作系统来负责线程间的调度。重量级锁减少了自旋锁带来的CPU消耗，但是由于操作系统调度线程带来的线程阻塞会使程序响应速度变慢。
+
+### **NIO多路复用**
+
+**BIO(blocking I/O) 同步阻塞**
+JDK1.4之前,是面向流传输的, 传输效率慢, **客户端每次发起一个请求, 建立一个连接**, 都创建一个socket对象, 不管有没有流的传输, **服务器都创建一个线程**, 但有些线程不会执行流的读写操作是无效的. 线程多了会占用过多的资源,浪费堆的内存空间(可以采用线程池去管理线程, 但是如果线程池满的情况下, 再创建新线程会等待空余线程去复用)不适合高并发情况
+io的阻塞是针对流是否可以同时读写来说的,stream只是支持单向的读写
+
+![img](https://img-blog.csdnimg.cn/20200623085602613.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L21pa2V3dWhhbw==,size_16,color_FFFFFF,t_70)
+
+**NIO (non-blocking I/O)同步非阻塞**
+组成部分: 通道, 缓冲区, 选择器
+JDK1.4开始支持, 引入的面向缓冲区的, 缓冲区buffer支持同时读写操作, 服务器不需要对每个请求都创建线程,
+执行流程: 客户端发起请求, 请求通过chanel通道注册到selector连接器上, selector进行while(true)轮询, 当轮询到到有读写操作时,才创建线程. 效率提升.适用连接数量较多,但连接较短的操作, 比如聊天室。
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200623085645209.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L21pa2V3dWhhbw==,size_16,color_FFFFFF,t_70)
+
+**AIO (Asynchronous I/O) 异步非阻塞**
+
+AIO的基本流程是：用户线程通过系统调用，告知kernel内核启动某个IO操作，用户线程返回。kernel内核在整个IO操作（包括数据准备、数据复制）完成后，通知用户程序，用户执行后续的业务操作。
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20200623095829175.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L21pa2V3dWhhbw==,size_16,color_FFFFFF,t_70)
+
+**BIO/NIO/AIO使用场景**
+并发连接数不多时采用BIO，因为它编程和调试都非常简单，但如果涉及到高并发的情况，应选择NIO或AIO，更好的建议是采用成熟的网络通信框架Netty。
+
+NIO中select、poll 、 epoll模式
+文件描述符fd:
+在linux中,一切皆文件,fd是非负整数,用来标明每一个被进程所打开的文件
+select模式
+当客户端发起一个socket请求, 在linux系统下看做一个文件描述符fd, select模式的fd存放bitmap里, 支持fd的大数量是1024。
