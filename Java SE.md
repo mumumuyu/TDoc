@@ -2028,8 +2028,21 @@ GUI(FX)
 
 新特性：
 
-1. 接口里可以用default,进行扩展方法
-2. 
+- 接口默认方法（”类优先”原则,自己指定调用哪个方法）
+
+- Lambda函数式编程(如下，简化代码，匿名内部类)
+
+- Stream流式处理(如下，像sql一样操作数据)
+
+  并行流：一个数据分成多个块，调用多个线程处理,并行parallel(),串行sequential()
+
+- Optional类
+
+  (Optional<T> 类(java.util.Optional) 是一个容器类，代表一个值存在或不存在，原来用 null 表示一个值不存在，现在 Optional 可以更好的表达这个概念。并且可以避免空指针异常。)
+
+- 新Date API（使用 LocalDate、LocalTime、LocalDateTime，不可变对象）
+
+- 多重注解
 
 #### Lambda参考多线程里，我貌似写了
 

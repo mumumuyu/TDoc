@@ -75,6 +75,14 @@ DateTime
 - 最左优先就是说组合索引的第一个字段必须出现在查询组句中，这个索引才会被用到。只要组合索引最左边第一个字段出现在Where中，那么不管后面的字段出现与否或者出现顺序如何，MySQL引擎都会自动调用索引来优化查询效率。
 - 根据最左匹配原则可以知道B-Tree建立索引的过程，比如假设有一个3列索引(col1,col2,col3),那么MySQL只会会建立三个索引(col1),(col1,col2),(col1,col2,col3)。
 
+MYSQL中处理插入过程主键或唯一重复值的解决办法：
+
+1.IGNORE:有则忽略，无则插入
+
+2.REPLACE：有则删除再插入，无则插入
+
+3.ON DUPLIACATE KEY UPDATE:有则更新，无则插入
+
 ##### 一次性插入百万级数量示例
 
 set global log_bin_trust_function_creators=TRUE;
