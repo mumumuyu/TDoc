@@ -596,35 +596,359 @@ Collections.synchronizedMap(new HashMap)
 
 new ConcurrentHashMap();
 
-
-
 ### 7.Callable
 
+类似于Runnable，Runnable不返回结果也不能抛出被检查的异常
 
+而Callabel<V>可以抛出异常，可以有返回值<V>泛型参数就是方法返回值类型
 
-### 8.CountDownLatch,CyclicBarrier,Semaphore
+FutureTask实现了Runnable接口的子接口RunnableFuture
+
+```java
+public class CallabelTest {
+    public static void main(String[] args) {
+        //Callable,FutureTask实现了Runnable接口的子接口RunnableFuture
+//        RunnableFuture;
+//        FutureTask;
+        MyThread myThread = new MyThread();
+        //适配类 FutrueTask
+        FutureTask futureTask = new FutureTask(myThread);
+
+        new Thread(futureTask,"threadA").start();
+
+        try {
+            String result = (String) futureTask.get();
+            System.out.println(result);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+}
+class MyThread implements Callable<String>{
+
+    @Override
+    public String call() throws Exception {
+        System.out.println("call");
+        return "success";
+    }
+}
+```
+
+执行完可以拿到返回结果,那为什么我们需要这个结果呢，因为我们需要这个方法执行后的一些参数或者出现的异常。
+
+由于这个get()方法可能产生阻塞，所以需要try,catch(InterruptedException)
+
+### 8.常用辅助类
+
+##### CountDownLatch
+
+```java
+public static void main(String[] args) {
+    CountDownLatch countDownLatch = new CountDownLatch(8);
+
+    for (int i = 1; i < 9; i++) {
+        new Thread(()->{
+            countDownLatch.countDown();
+            System.out.println(Thread.currentThread().getName() + "go");
+        },String.valueOf(i)).start();
+    }
+
+    try {
+        countDownLatch.await();//等待计数器归零,说明上述所有线程都执行完毕,再执行后面的操作
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+
+    System.out.println("Close door");
+}
+```
+
+countDowLatch.countDown();数量-1
+
+countDownLatch.await();//等待计数器归零后进行唤醒，程序继续执行
+
+##### CyclicBarrier
+
+```java
+CyclicBarrier cyclicBarrier = new CyclicBarrier(9,()->{
+    System.out.println("成功升至九五至尊");
+});
+
+for (int i = 1; i < 10; i++) {
+    new Thread(()->{
+        System.out.println(Thread.currentThread().getName()+"个");
+        try {
+            cyclicBarrier.await();//等待
+        } catch (InterruptedException | BrokenBarrierException e) {
+            e.printStackTrace();
+        }
+    },String.valueOf(i)).start();
+}
+```
+
+指定个数线程执行完毕后再执行操作
+
+加法计数器
+
+##### Semaphore
+
+用途：多个共享资源互斥使用，限流
+
+同一时间最多有X个数量得到线程;acquire
+
+信号量：
+
+- 当n>0时表示还有n个可用进程
+- n=0表示可用进程为0
+- n<0表示资源占满，有n个在等待。(OS中解决互斥同步问题)
+
+当一个进程申请资源时：如果n>0,则进行count--再使用,如果n<0则进行count--则进行排队。
+
+当一个进程释放资源时候：如果n>0,则进行count++,如果n<0则进行count++再唤醒进程。
+
+```java
+public static void main(String[] args) {
+        Semaphore semaphore = new Semaphore(3);
+        for (int i = 1; i <= 6; i++) {
+            final int temp = i;
+            new Thread(()->{
+                try {
+                    semaphore.acquire();
+                    System.out.println(temp + "抢到了");
+                    TimeUnit.SECONDS.sleep(2);
+                    System.out.println(temp + "离开了");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }finally {
+                    semaphore.release();
+                }
+            }).start();
+        }
+    }
+```
+
+参考效果
+
+![image-20220714162906781](/image-20220714162906781.png)
 
 ### 9.读写锁
 
+**ReadWriteLock**:读的时候可以有多个线程去同时读，但是写的时候只可以有一个线程去写。
+
+```java
+class MyCacheLock {
+    private volatile Map<String,Object> map = new HashMap<>();
+    private ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    //写只能一个线程写
+    void put(String key,Object value){
+        lock.writeLock().lock();//写入锁
+        try {
+            System.out.println(Thread.currentThread().getName() + "写入" + key);
+            map.put(key, value);
+            System.out.println(Thread.currentThread().getName() + "写入完成");
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    //读可以多个线程去读
+    void get(String key){
+        System.out.println(Thread.currentThread().getName() + "读取" +key);
+        map.get(key);
+        System.out.println(Thread.currentThread().getName() + "读取完成");
+    }
+}
+```
+
 ### 10.阻塞队列
+
+阻塞：队列满了需要阻塞等待,如果队列是空的，必须阻塞等待生产
+
+队列
+
+- Collection
+  - Set
+  - List
+  - Queue
+    - Deque(双端队列)
+    - AbstractQueue(非阻塞队列)
+    - BlockingQueue（阻塞队列）
+      -  LinkedBlockingQueue
+      - ArrayBlockingQueue 
+
+在 **多线程并发处理** **线程池** 情况下我们会使用阻塞队列
+
+四组API
+
+1. 抛出异常
+
+   //Queue full,满了抛出异常
+
+   //NoSuchElementException没有了还remove抛出异常
+
+2. 不抛出异常
+
+   //false不抛出异常，返回false
+
+   // 取不到值返回null
+
+3. 阻塞 等待
+
+4.  超时等待
+
+| 方式     | 抛出异常 | 有返回值 | 阻塞等待 | 超时等待               |
+| -------- | -------- | -------- | -------- | ---------------------- |
+| 添加     | add()    | offer()  | put()    | offer(e,x,TimeUnit.XX) |
+| 移除     | remove() | poll()   | take()   | poll(x,TimeUnit.XX)    |
+| 获取队首 | element  | peek     | --       | --                     |
+
+> SynchronizedQueue
+
+容量为0
+
+进去一个元素必须等取出来才能再次放入
 
 ### 11.线程池
 
+三种方法，七大参数，四种策略
 
+> ​	池化技术
+
+程序的运行，本质就是占用系统i资源，所以我们要优化资源=>池化技术
+
+线程池，连接池，内存池，对象池。。。
+
+池化技术：
+
+一般我们会设置事先准备好很多资源(防止不断地连接与关闭消耗资源)，有人要用就给，用完还给我。
+
+![image-20220715161126535](/image-20220715161126535.png)
+
+**线程池创建核心7参数**
+
+- corePoolSize,核心线程数量，核心线程不会被回收，当线程池线程数小于核心数时会进行创建。
+
+- maximumPoolSize:线程池最大线程，当线程数量达到corePoolSize，且workQueue(队列)塞满任务后继续创建线程
+
+  如何定义最大线程数(自己定)：
+
+  1、CPU 密集型 ：CPU核心数
+
+  2、 IO 密集型 ： 判断十分耗IO的线程数
+
+- keepAliveTime: 超过corePoolSize后”临时线程“的空闲存活时间
+
+- unit: keepAliveTime单位比如TimeUnit有SECONDS,DAY...
+
+- WorkQueue: 线程数超过corePoolSize后新任务会处于等待状态并存于workQueue中
+
+- ThreadFactory: 创建线程的工厂类
+
+- Handler: 线程池拒绝策略，线程数达到最大线程数，且WorkQueue也被塞满后线程池会调用Handler拒绝策略来处理请求
+
+  - AbortPolicy：（默认）丢弃任务并抛出异常
+  - DiscardPolicy：丢弃任务但不抛出异常
+  - DiscardOldestPolicy：丢弃最老任务，把最新任务加入队列执行
+  - CallerRunsPolicy：将任务分配给执行execute方法的当前线程处理
+
+**创建线程池的几种方法**
+
+Executors.newSingleThreadExecutor();   即只创建唯一的工作线程来执行任务，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行。
+
+Executors.newFixedThreadPool(5);    创建一个指定工作线程数量的线程池。
+
+Executors.newCachedThreadPool();   创建一个可缓存线程池。
+
+Executors.newScheduleThreadPool()；创建一个定长的线程池，而且支持定时的以及周期性的任务执行。
+
+**线程池的线程复用**
+
+**一个线程可以不断地从阻塞队列中获取任务来执行**，其核心原理在于线程池对Thread进行了一个封装，而不用每次去调用Thread.start方法创建新线程，这样就破坏掉了线程池存在的意义。而是让每个线程去执行一个“**循环任务**”，它会直接去调用任务的run方法，一直去判断有没有要执行的任务，把它当成普通的方法来执行。
+
+**execute**()与**submit**()
+
+execute针对于类似于runnable这种不需要返回值的任务，无法被判断是否成功执行
+
+submit类似于Callabel这种有返回值的任务，可以去判断执行成功与否并通过get获取线程返回值V(入参即返回值类型),使用get(xx,TimeUnit.SECODES)可以设置最长等待时间，超过这个时间立即返回，此时任务没有执行完
+
+**线程池底层工作原理**
+
+线程池通过Executor框架实现，主要时ThreadPoolExecutor类，成员变量AtomicInteer通过CAS(Compare and set)达到无锁并发，效率高，竞争少
+
+ThreadPoolExecutor又是通过LinkedBlockingQueue阻塞队列来实现
+
+当调用execute添加一个任务后，线程先进行判断当前线程数是否小于corePoolSize
+
+小于则新建一个线程去执行
+
+大于等于的话就会把任务放入等待队列中：
+
+- 若等待队列满了，且当前线程数小于最大线程数Max，则创建临时线程去执行任务
+- 如果队列满了而且当前线程数大于等于Max最大线程数，则进行饱和拒绝策略(四种)
+
+当线程池里的线程执行完一个任务后会到等待队列中取任务，来执行
+
+当当前线程数大于核心线程数而且一个线程已经执行完一个任务后空闲了超过keepAliveTime，则线程会把它回收以达到corePoolSize
+
+线程阻塞队列：
+
+ArrayBlockingQueue:数组+一把锁+两个条件，基于数组实现，对象入队出队都用一把锁，入队或出队高并发情况下，不需要扩容(也造成指定大小后大小有限)
+
+LinkedBlockingQueue:单向链表+两把锁+两个条件，基于链表实现，两把锁一把入队一把出队，在入队与出队都高并发情况下由于ArrayBlockingQueue，容量无限。
+
+阻塞队列可用于生产者与消费者模型(低级方法通过notify(),wait()实现线程间的通信)
+
+**不允许使用Executors直接创建(允许的请求队列最大长度为Integer.MAX_VALUE，21以容易导致OOM)**，而应通过ThreadPoolExecutor方式，
 
 ### 12.四大函数式接口
 
+- Lambda
+- 链式编程
+- 函数式接口
+- Stream流式计算
+
+@FunctionalInternal
+
+四大函数式接口
+
+- Function<T , R>:T传入参数，T返回类型 R apply(T t);
+
+  ```java
+  Function<String, String> function = s -> s+"lalala";
+  
+  //同理
+  new Function<String, String>() {
+              @Override
+              public String apply(String s) {
+                  return s;
+              }
+          };
+  ```
+
+- Consumer
+
+
+
 ### 13.Stream流式计算
 
-
+JAVA8新特性Stream参考SE里写的，已经很全了
 
 ### 14.分支合并
+
+
 
 ### 15.异步回调
 
 
 
 ### 16.JMM
+
+
 
 ### 17.volatile
 
@@ -636,6 +960,11 @@ new ConcurrentHashMap();
 
 ### 19.深入理解CAS
 
+
+
 ### 20.源自引用
 
-### 21.可重入锁，公平锁，非公平锁，自旋锁，死锁...
+
+
+### 21.可重入锁，公平锁，非公平锁，自旋锁，死锁
+
