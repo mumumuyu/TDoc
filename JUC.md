@@ -914,9 +914,9 @@ LinkedBlockingQueue:单向链表+两把锁+两个条件，基于链表实现，�
 
 @FunctionalInternal
 
-四大函数式接口
+四大函数式接口 Consumer Function Predicate Suppiler
 
-- Function<T , R>:T传入参数，T返回类型 R apply(T t);
+- Function<T , R>(函数式接口):T 传入参数，T 返回类型 R apply(T t);
 
   ```java
   Function<String, String> function = s -> s+"lalala";
@@ -930,41 +930,550 @@ LinkedBlockingQueue:单向链表+两把锁+两个条件，基于链表实现，�
           };
   ```
 
-- Consumer
+- Predicate(断定型接口)有一个输入参数，返回值只能是布尔值类型
 
+  ```java
+  Predicate<String> predicate = s -> s.isEmpty();
+  
+  Predicate<String> predicate = new Predicate<String>(){
+      @Override
+      public boolean test(String str){
+          return str.isEmpty();
+      }
+  };
+  ```
 
+- Consumer 消费型接口(只有输入，没有返回值)
+
+  ```java
+  Consumer<String> consumer = s -> System.out.println(s);
+  
+  consumer.accept("sss");
+  ```
+
+- Suppiler 供应型接口(只有输出，没有参数)
+
+  ```java
+  Supplier<String> supplier = () -> "ssss";
+  System.out.println(supplier.get());
+  
+  Supplier<String> supplier = new Supplier<String>() {
+              @Override
+              public String get() {
+                  return "ssss";
+              }
+          };
+  ```
 
 ### 13.Stream流式计算
 
+这里说一下，Stream流操作中有许多是用到函数式接口 结合lambda表达式，所以写起来非常简单，同时如果不经常用人家来看可能一下子也看不懂,hhh
+
 JAVA8新特性Stream参考SE里写的，已经很全了
 
-### 14.分支合并
+### 14.分支合并 ForkJoin
 
+> 分支合并 ForkJoin
 
+jdk1.7之后出来，并行执行任务以提高效率，大数据量
+
+大数据 Map Reduce，把大任务拆分成很多小任务，由很多个线程去并行执行，比如Stream的parellel并行流。
+
+特点：**工作窃取**(一个线程执行地快，另一个线程执行地慢，快线程就会去窃取慢线程地任务来执行以加快效率)。这里面维护的双端队列Deque.
 
 ### 15.异步回调
 
+> Future 设计初衷：对将来的某个事件的结果进行建模
 
+Ajax
+
+CompletableFuture
+
+@Async
+
+执行成功回调
+
+失败回调
+
+```java
+	CompletableFuture<Void> future = CompletableFuture.runAsync (()->{
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("延迟两秒后输出");
+        });
+
+        System.out.println("先输出");
+
+        try {
+            System.out.println(future.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+	CompletableFuture<Integer> async = CompletableFuture.supplyAsync(() -> {
+            return 1024;
+        });
+        try {
+            System.out.println(async.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+
+		CompletableFuture<Integer> async = CompletableFuture.supplyAsync(() -> {
+            int i = 10/0;
+            return 200;
+        });
+        try {
+            System.out.println(async.whenComplete((t,v)->{
+                System.out.println(t + " " + v );
+            }).exceptionally((e)->{
+                System.out.println(e.getMessage());
+                return 500;
+            }).get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+```
+
+类似于B/S端，成功200，失败500返回值
 
 ### 16.JMM
 
+**指令并行的重排：** 现代处理器采用了指令级并行技术来将多条指令重叠执行。如果不存在数据依赖性(即后一个执行的语句无需依赖前面执行的语句的结果)，处理器可以改变语句对应的机器指令的执行顺序。
 
+参考SE里写的
+
+线程解锁前，必须把共享变量刷到主内存
+
+线程加锁前，必须读取主存中的最新值到工作内存中
+
+加锁和解锁是同一把锁
+
+JMM内存分为工作内存与主内存（共享变量）区域
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/039b03e0909c461bbc060ba966d38130.png#pic_center)
+
+线程有私有的工作内存
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/5a224b47ab244e60b6f152f45a4c56e3.png#pic_center)
+
+
+
+- 原子性：一个操作是不可中断的，即使是在多线程环境下，一个操作一旦开始就不会被其他线程影响。比如对于一个静态变量int i = 0，两条线程同时对他赋值，线程A操作为 i = 1，而线程B操作为 i = 2，不管线程如何运行，最终 i 的值要么是1，要么是2，线程A和线程B间的操作是没有干扰的，这就是原子性操作，不可被中断的特点。
+- 可见性：当一个线程修改了某个共享变量的值，其他线程是否能够马上得知这个修改的值
+- 有序性：对于单线程的执行代码，我们总是认为代码的执行是按顺序依次执行的，这样的理解如果是放在单线程环境下没有问题，毕竟对于单线程而言确实如此，代码由编码的顺序从上往下执行
+
+数据同步八大原子操作：
+
+数据同步八大原子操作
+（1）lock(锁定)：作用于主内存的变量，把一个变量标记为一条线程独占状态
+（2）unlock(解锁)：作用于主内存的变量，把一个处于锁定状态的变量释放出来，释放后的变量才可以被其他线程锁定
+（3）read(读取)：作用于主内存的变量，把一个变量值从主内存传输到线程的工作内存中，以便随后的load动作使用
+（4）load(载入)：作用于工作内存的变量，它把read操作从主内存中得到的变量值放入工作内存的变量副本中
+（5）use(使用)：作用于工作内存的变量，把工作内存中的一个变量值传递给执行引擎
+（6）assign(赋值)：作用于工作内存的变量，它把一个从执行引擎接收到的值赋给工作内存的变量
+（7）store(存储)：作用于工作内存的变量，把工作内存中的一个变量的值传送到主内存中，以便随后的write的操作
+（8）write(写入)：作用于工作内存的变量，它把store操作从工作内存中的一个变量的值传送到主内存的变量中
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/c23b59f917b0477caae6f99ab0bf91e3.png#pic_center)
 
 ### 17.volatile
 
+我们希望线程知道主内存的变量已经被修改，让线程重新读取
 
+是Java虚拟机提供的轻量级的同步机制
+
+- 保证可见性，有序性（有序性是通过禁止指令重排来实现的）
+- **不保证原子性** (不可分割)线程A，不可被打扰，也不可被分割。要么同时成功，要么同时失败。使用**AtomicInteger**()弥补(使用native底层方法直接搞CPU操作系统,基于CAS实现)十分高效，人家java.concurrent.**atomic**甚至单独为他留了一个包出来编写。
+- 禁止指令重排(java编译器会在生成指令系列时在适当的位置会插入内存屏障指令来禁止特定类型的处理器重排序)
+
+JMM内存屏障分为四类：
+
+![img](https://img-blog.csdnimg.cn/img_convert/4774036a5d5e2671094cd420d75f9e02.png)
+
+java编译器会在生成指令系列时在适当的位置会插入内存屏障指令来禁止特定类型的处理器重排序。为了实现volatile的内存语义，JMM会限制特定类型的编译器和处理器重排序，JMM会针对编译器制定volatile重排序规则表：
+
+![img](https://img-blog.csdnimg.cn/img_convert/50f32c1b1ceeca8b3b182eb70177f4cf.png)
+
+"NO"表示禁止重排序。为了实现volatile内存语义时，编译器在生成字节码时，会在指令序列中插入内存屏障来禁止特定类型的处理器重排序。对于编译器来说，发现一个最优布置来最小化插入屏障的总数几乎是不可能的，为此，JMM采取了保守策略：
+
+在每个volatile写操作的前面插入一个StoreStore屏障；
+在每个volatile写操作的后面插入一个StoreLoad屏障；
+在每个volatile读操作的前面插入一个LoadLoad屏障；
+在每个volatile读操作的后面插入一个LoadStore屏障。
+需要注意的是：volatile写是在前面和后面分别插入内存屏障，而volatile读操作是在后面插入两个内存屏障
+
+StoreStore屏障：禁止上面的普通写和下面的volatile写重排序；
+
+StoreLoad屏障：防止上面的volatile写与下面可能有的volatile读/写重排序
+
+LoadLoad屏障：禁止下面所有的普通读操作和上面的volatile读重排序
+
+LoadStore屏障：禁止下面所有的普通写操作和上面的volatile读重排序
+
+**synchronized**
+
+JMM关于synchronized的两条规定：
+
+　　1）线程解锁前，必须把共享变量的最新值刷新到主内存中
+
+　　2）线程**加锁**时，将**清空工作内存中共享变量**的值，从而使用共享变量时需要从主内存中重新获取最新的值
+
+　　　（注意：加锁与解锁需要是同一把锁）
+
+synchronized底层由于采用了字节码指令**monitorenter**和**monitorexit**来隐式地使用这lock和unlock两个操作，使得其操作具有原子性。
+
+unsafe一个很神奇的类
 
 ### 18.深入单例模式
 
+饿汉式
 
+```java
+class Hungry {
+
+    private volatile static Hungry hungry;
+    private Hungry() {
+        System.out.println(Thread.currentThread().getName() + " ok ");
+    }
+    //双重检测锁模式
+    public static Hungry getInstance(){
+        if (hungry == null) {
+            synchronized (Hungry.class) {
+                if (hungry == null)
+                /**
+                 * new 的过程分为3步
+                 * 1.分配内存
+                 * 2.创建实例
+                 * 3.指向地址
+                 *
+                 * 如果指令可以重排
+                 * 132C操作，那么B拿到的可能是Null，因为虽然指向了地址，但是此时还没有创建实例
+                 */
+                    hungry = new Hungry();
+            }
+        }
+        return hungry;
+    }
+
+}
+public class HungryDemo {
+    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Hungry instance = Hungry.getInstance();
+        Hungry instance2 = Hungry.getInstance();
+
+        Constructor<EnumSingle> constructor = EnumSingle.class.getDeclaredConstructor(String.class,int.class);
+        constructor.setAccessible(true);
+
+        EnumSingle enumSingle = constructor.newInstance();
+
+    }
+}
+
+enum EnumSingle {
+    INSTANCE;
+
+    public EnumSingle getInstance(){
+        return  INSTANCE;
+    }
+}
+```
 
 ### 19.深入理解CAS
 
+> 什么是CAS
+
+compareAndSet 比较当前工作内存值与主内存值，如果是期望的那就执行操作，否则不执行，由于do while会一直循环阻塞直到修改	期望是这个值就进行更新
+
+**自旋锁**，不停循环，直到修改
+
+缺点：循环耗时，底层CPU一次性只能保证一个共享变量的原子性，存在ABA问题
+
+```java
+/**
+ * @Description: CAS compareAndSet 比较与交换
+ * CAS 是CPU的并发原语 , java无法调用内存，但是可以用native调用C++，C++可以操作内存，通过Unsafe类可以操作内存
+ * @author: LGD
+ * @date:2022/7/20 9:00
+ */
+public class CASDemo {
+
+    public static void main(String[] args) {
+        AtomicInteger atomicInteger =  new AtomicInteger(2022);
+
+        // public final boolean compareAndSet(int expect, int update) 期望，更新值 修改成功true
+        atomicInteger.compareAndSet(2022,2033);
+        System.out.println(atomicInteger.get());
+    }
+}
+```
+
+>CAS: ABA 问题
+
+线程A:cas(1,2)
+
+线程B: cas(1,3) cas(3,1)
+
+线程B换过1，又换回1，线程A不知道，以为还是1
+
+### 20.原子引用
+
+带版本号的原子操作，类似于Mysql的乐观锁
+
+AtomicReference控制版本
+
+注意这里比较装箱源码里比较的是地址 ==,而Integer缓存只有-128~127，超过了就会new一个对象造成尽管值一样，但是地址不一样还是为false
+
+```java
+AtomicStampedReference<Integer> stampedReference = new AtomicStampedReference<>(101, 1);
+
+ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(2, 4, 5000, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+threadPoolExecutor.execute(()->{
+    Integer reference = stampedReference.getReference();
+    System.out.println("A1 " + stampedReference.getReference() + " "  + reference);
+
+    try {
+        TimeUnit.SECONDS.sleep(2);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+
+    System.out.println("A2 "  +stampedReference.compareAndSet(101, 103, stampedReference.getStamp(), stampedReference.getStamp() + 1));
+    System.out.println("A2 " + stampedReference.getReference() + " "+ stampedReference.getStamp());
 
 
-### 20.源自引用
+    System.out.println("A3 "  +stampedReference.compareAndSet(103, 101, stampedReference.getStamp(), stampedReference.getStamp() + 1));
+    System.out.println("A3 " + stampedReference.getReference()+ " " + stampedReference.getStamp());
+});
 
+threadPoolExecutor.execute(()->{
+    Integer reference = stampedReference.getReference();
+    System.out.println("B1 " + + stampedReference.getReference() + " "+ reference);
 
+    try {
+        TimeUnit.SECONDS.sleep(2);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+
+    System.out.println("B2 "  + stampedReference.compareAndSet(101, 111, stampedReference.getStamp(), stampedReference.getStamp() + 1));
+    System.out.println("B2 " + stampedReference.getReference() + " "+ stampedReference.getStamp());
+
+});
+
+threadPoolExecutor.shutdown();
+```
+
+这里可能A都成功，B不成功
+
+A都不成功或者B都成功
 
 ### 21.可重入锁，公平锁，非公平锁，自旋锁，死锁
+
+公平锁：很公平，队列不可以插队，必须先来后到
+
+非公平锁：很不公平，可以插队(默认都是非公平锁)
+
+**可重入锁**：(递归锁)，拿到外面的锁后就可以获得里面的锁(自动获得)
+
+```java
+/**
+ *pool-1-thread-1sms
+ *pool-1-thread-1call
+ *pool-1-thread-2call
+ */
+public class lockDemo {
+    public static void main(String[] args) {
+        Phone phone = new Phone();
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(2, 5, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
+        threadPoolExecutor.execute(()->{
+            phone.sms();
+        });
+        threadPoolExecutor.execute(()->{
+            phone.call();
+        });
+        threadPoolExecutor.shutdown();
+    }
+}
+
+class Phone{
+    public synchronized void sms(){
+        System.out.println(Thread.currentThread().getName() + "sms");
+
+        try {
+            TimeUnit.SECONDS.sleep(2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        call();
+    }
+
+    public synchronized void call(){
+        System.out.println(Thread.currentThread().getName() + "call");
+    }
+
+}
+```
+
+lock，**可重入锁**(获得一个锁后，可以继续获得锁而不会出现死锁，然后一层层解开，Lock锁必须配对，否则程序会死在里面)
+
+```java
+class Phone2{
+    Lock lock = new ReentrantLock();
+    public void sms(){
+        lock.lock(); // 外面的锁
+        try {
+            System.out.println(Thread.currentThread().getName() + "sms");
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            call();
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            lock.unlock();
+        }
+    }
+
+    public void call(){
+        lock.lock();//里面的锁
+        System.out.println(Thread.currentThread().getName() + "call");
+        lock.unlock();
+    }
+}
+```
+
+**自旋锁**
+
+```java
+public final int getAndAddInt(Object var1, long var2, int var4){
+    int var5;
+    do {
+        var5 = this.getIntVolatile(var1, var2);
+    } while(!this.compareAndSwapInt(var1,var2, var5 , var5 + var4));
+}
+```
+
+自制自旋锁(加锁，不断循环以加锁)
+
+```java
+public class SpinlockDemo {
+
+    AtomicReference<Thread> atomicReference = new AtomicReference<>();
+
+    // 加锁
+    public void myLock(){
+        Thread thread = Thread.currentThread();
+
+        // 自旋锁
+        while(!atomicReference.compareAndSet(null,thread)){
+
+        }
+
+        System.out.println(thread.getName() + " lock");
+    }
+
+    // 解锁
+    public void myUnlock(){
+        Thread thread = Thread.currentThread();
+        atomicReference.compareAndSet(thread,null);
+        System.out.println(thread.getName() + " unlock");
+    }
+}
+```
+
+**死锁**
+
+> 死锁
+
+- 互斥资源
+
+- 不可剥夺
+- 一直等待，不放弃资源
+
+简简单单一个四锁
+
+```java
+class MyDeadThread implements Runnable{
+
+    private static final String res1 = "res1";
+    private static final String res2 = "res2";
+    static int count = 1;
+    @Override
+    public void run() {
+        if (count == 1) {
+            count++;
+            synchronized (res1) {
+                System.out.println("拿到res1");
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                synchronized (res2){
+                    System.out.println("拿到res2");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }else{
+            synchronized (res2) {
+                System.out.println("拿到res2");
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                synchronized (res1){
+                    System.out.println("拿到res1");
+                    try {
+                        TimeUnit.SECONDS.sleep(5);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+解决问题
+
+1. 使用jps 定位进程号
+
+   `jps -l`
+
+   获取进程
+
+   ![image-20220720155213139](/image-20220720155213139.png)
+
+2. 使用` jstack 进程号`查看具体信息
+
+   ![image-20220720160335450](/image-20220720160335450.png)
+
+面试，工作里排查问题：
+
+1. 日志
+2. 堆栈信息,Jprofile,jps -l, jstack 进程号
+
+小结：
 

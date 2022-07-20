@@ -82,7 +82,26 @@ public static boolean hasCycle(ListNode head){
 
 ### 排序/查找
 
-**二分查找相关**
+##### **双指针**
+
+```java
+		int start = 0,end = numbers.length-1;
+        int[] ints = new int[2];
+
+        while(start < end){
+            if(numbers[start]+ numbers[end] > target)
+                end--;
+            if(numbers[start]+ numbers[end] < target)
+                start++;
+            if (numbers[start]+ numbers[end] == target){
+                ints[0] = start;
+                ints[1] = end;
+                break;
+            }
+        }
+```
+
+##### **二分查找相关**
 
 ```java
 public static int firstBadVersion(int n) {
