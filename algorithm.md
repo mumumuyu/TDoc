@@ -131,6 +131,56 @@ public static boolean isBadVersion(int n){
 }
 ```
 
+子数组(和，积)
+
+##### 滑动窗口
+
+对于正整数连续序列的和或者积可以用
+
+它右指针遍历数组，左指针为了让值偏向于目标而向右滑动
+
+```java
+//滑动窗口，妙啊
+    public static int numSubarrayProductLessThanK(int[] nums, int k) {
+        int start = 0, end = 0, product = 1, count = 0;
+        while (end < nums.length){
+            product *= nums[end];
+            //积>=k，左侧窗口右移
+            while (start <= end && k <= product){
+                product /= nums[start ++] ;
+            }
+
+            if(start <= end){
+                count += end - start + 1;
+            }
+            end++;
+        }
+
+        return count;
+    }
+```
+
+但它并不适用于含有负数的
+
+##### 朴素前缀和
+
+可以弥补上述用于含有负数的
+
+```java
+//朴素前缀和
+public static int subarraySum2(int[] nums, int k) {
+    int count = 0,sum = 0;
+    HashMap<Integer,Integer> maps = new HashMap<>();
+    maps.put(0,1);
+    for (int num:nums){
+        sum += num;
+        count += maps.getOrDefault(sum - k,0);
+        maps.put(sum,maps.getOrDefault(sum,0)+1);
+    }
+    return count;
+}
+```
+
 ### **树**
 
 关于平衡二叉树:
