@@ -1,5 +1,205 @@
 # Vue
 
+MVVM: Model View ViewMoedl
+
+页面与数据相分离
+
+Model——data
+
+View——模板 DOM，页面
+
+VM——Vue实例对象( DOM Listeners , Data  Bindings)作为桥梁连接View与Model
+
+数据双向绑定那个v-model
+
+运用虚拟DOM
+
+
+
+const用于定义常量则不可变，定义对象，对象不可变(属性可变)
+
+let 不可重复定义变量，var可以，let有块级作用域，var没有
+
+```html
+<div id = "root">
+            <!-- {{}}模板,里头js表达式可以产生一个值 -->
+            hello , {{name.toUpperCase()}} ， {{Date.now()}}
+        </div>
+        <div id = "root2">
+            <!-- {{}}模板 -->
+            hello2, {{name}}    
+        </div>
+        <!-- 步骤:1.创建Vue实例并绑定对象(第一个Vue绑定第一个对应出现的容器) 将数据与视图分解 -->
+        <script type="text/javascript">
+            
+            Vue.config.productionTip = false;
+
+            //一个Vue实例,容器和实例使用element绑定
+            new Vue({
+                el:'#root', //el用于指定当前Vue为哪个容器服务，一般为css选择器字符串
+                data: { //data存储数据，用于el的指定容器进行使用
+                    name: 'lgd1'
+                }
+            })
+
+            new Vue({
+                el:'#root2', //el用于指定当前Vue为哪个容器服务，一般为css选择器字符串
+                data: { //data存储数据，用于el的指定容器进行使用
+                    name: 'lgd2'
+                }
+            })
+        </script>
+```
+
+##### js模板表达式
+
+```html
+<div id = "root">
+            <!-- 插值语法 用于标签体 js表达式-->
+            {{name}}
+            <!-- 指令语法 管理标签属性  v-bind: 可以简写为: 后头自动+{{}}里头写js表达式-->
+            <a v-bind:href="muban.url" v-bind:a="test">点我进我{{muban.name2}}网站</a>
+            <a :href="muban.url.toUpperCase()">点我进我网站2</a>
+
+        </div>
+
+        <script type="text/javascript">
+            // 一般xx{}为一个对象，xxx{{x:'lolo'}}一个对象，可以嵌套使用xx.xxx.lolo得到值
+            Vue.config.productionTip = false;
+
+            new Vue({
+                el:'#root', 
+                data: { 
+                    name: 'lgd1',
+                    muban:{
+                    name: 'lgd2',
+                    url: 'http://www.leigd.cn'
+                    },
+                    test: 'hello'
+                }
+            })
+
+        </script>    
+```
+
+##### el表达式
+
+```html
+<div id = "root">
+            <!-- 单向数据绑定 v-bind-->
+            <input type="text" :value="name" />
+             
+        </div>
+
+        <script type="text/javascript">
+            Vue.config.productionTip = false;
+
+            const v = new Vue({
+                //el:'#root', 
+                //第一种写法:对象式
+                // data: { 
+                //     name: 'lgd1'
+                // }
+
+                // 第二种写法 函数式 组件时候，就必须用函数式
+                //data:function(){
+                data(){
+                    //此处this 是Vue实例
+                    console.log('@@@',this)
+
+                    return{
+                        name: 'lgd1'
+                    }
+                }
+            })
+            
+            console.log(v)
+
+            setTimeout(() => {
+                //利用mount挂载
+                v.$mount('#root')
+            },1000)
+            
+        </script>
+```
+
+##### 代理模式——双向绑定实现
+
+```html
+<div id = "root">
+             
+        </div>
+
+        <script type="text/javascript">
+            Vue.config.productionTip = false;
+
+            const v = new Vue({
+                el:'#root', 
+                data(){
+                    return{
+                        //通过setter getter
+                        name: 'lgd1'
+                    }
+                }
+            })
+
+            let person = {
+                name: 'lgd',
+                sex: 'man'
+            }
+            
+            let number = 24
+
+            //这种方式增加的属性不可以被对象遍历到 
+            Object.defineProperty(person,'age',{
+                // value: 18,
+                // enumerable: true, //使用enumerable可以设置遍历到 Object.keys(person)
+                // writable: true, // 控制属性是否可以被修改 person.age = 19
+                // configurable: true // 控制属性是否可以被删除 delete
+
+                //有人用person.age访问时就会被调用，getter
+                get:function(){
+                    console.log('有人读取值' + number)
+                    return number
+                },
+                // 同理 setter
+                set(value){
+                    console.log('有人把值改成了' + value)
+                    number = value
+                }
+            })
+            //这样就可以把两个属性进行双向绑定，数据代理
+            Object.defineProperty(person, 'age2',{
+                set(value){
+                    person.age = value
+                    number = value
+                },
+                get(){
+                    return person.age
+                }
+            })
+
+            console.log(Object.keys(person))
+
+            //这种方式可以遍历person每个值
+            for(let key in person){
+                console.log(person[key])
+            }
+
+            console.log(person)
+  
+        </script>    
+```
+
+通过
+
+```txt
+v._data.name可以获取Vue实例的数据的某个属性
+'lgd1'
+```
+
+
+
 #### 第一个demo
 
 ```html
@@ -72,6 +272,47 @@ methods:{
 MVVM:
 
 ##### 双向数据绑定
+
+```html
+<div id = "root">
+            <!-- 单向数据绑定 v-bind-->
+            <input type="text" :value="name" />
+             
+        </div>
+
+        <script type="text/javascript">
+            Vue.config.productionTip = false;
+
+            const v = new Vue({
+                //el:'#root', 
+                //第一种写法:对象式
+                // data: { 
+                //     name: 'lgd1'
+                // }
+
+                // 第二种写法 函数式 组件时候，就必须用函数式
+                //data:function(){
+                data(){
+                    //此处this 是Vue实例
+                    console.log('@@@',this)
+
+                    return{
+                        name: 'lgd1'
+                    }
+                }
+            })
+            
+            console.log(v)
+
+            setTimeout(() => {
+                //利用mount挂载
+                v.$mount('#root')
+            },1000)
+            
+        </script>
+```
+
+
 
 view viewmodel
 
