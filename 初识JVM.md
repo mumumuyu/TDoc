@@ -446,7 +446,7 @@ JMM对这八种指令的使用，制定了如下规则：
 
 　　但是需要注意的是，我们一直在拿volatile和synchronized做对比，仅仅是因为这两个关键字在某些内存语义上有共通之处，volatile并不能完全替代synchronized，它依然是个轻量级锁，在很多场景下，volatile并不能胜任。看下这个例子：
 
-```
+```java
 
 import java.util.concurrent.CountDownLatch;
 
@@ -495,7 +495,7 @@ public class Counter {
 
 　　针对num++这类复合类的操作，可以使用java并发包中的原子操作类原子操作类是通过循环CAS的方式来保证其原子性的。
 
-```
+```java
 public class Counter {　　//使用原子操作类
     public static AtomicInteger num = new AtomicInteger(0);
     //使用CountDownLatch来等待计算线程执行完
