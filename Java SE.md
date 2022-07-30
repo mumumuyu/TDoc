@@ -1709,6 +1709,18 @@ public static AtomicInteger num = new AtomicInteger(0);
 
 ##### 集合
 
+![image-20220728114437310](C:\Users\L\Desktop\文档\photo\image-20220728114437310.png)
+
+```java
+			Iterator it = list.iterator(); //获取迭代器对象
+			while (it.hasNext()) {         //判断是否还有元素
+				Object obj = it.next();    //取出元素
+				System.out.println(obj);
+			}
+```
+
+
+
 - Collection
 
   - List
@@ -2248,6 +2260,13 @@ public static Student student;
           for (String s1:sIdList){
               System.out.println(s1);
           }
+  		
+  //去重，按照字段
+  ArrayList<HashMap<String, Object>> disMaps = maps.stream().collect(Collectors.collectingAndThen(
+                  Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> (BigDecimal) o.get("ID")))), ArrayList::new));
+  //多个字段
+  ArrayList<HashMap<String, Object>> disMaps = maps.stream().collect(Collectors.collectingAndThen(
+                  Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> (BigDecimal) o.get("ID") ";" (String) o.get("NAME")))), ArrayList::new));
   ```
 
   ![image-20220610150726458](C:\Users\L\Desktop\文档\photo\image-20220610150726458.png)
