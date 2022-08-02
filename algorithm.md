@@ -80,6 +80,34 @@ public static boolean hasCycle(ListNode head){
     }
 ```
 
+##### 链表相加：
+
+Long都寄了，长度不够，所以可以使用维护一个进位变量的方法
+
+```java
+public static ListNode addTwoNumbers2(ListNode l1, ListNode l2) {
+        ListNode node = new ListNode();
+        ListNode pre = node;//不直接操作原指针
+        int t = 0;//进位变量
+        while(l1 != null || l2 != null || t != 0){
+            if(l1 != null){
+                t += l1.val;
+                l1 = l1.next;
+            }
+            if(l2 != null){
+                t += l2.val;
+                l2 = l2.next;
+            }
+            pre.next = new ListNode(t % 10);
+            pre = pre.next;
+            t /= 10;
+        }
+        return node.next;
+    }
+```
+
+
+
 ## 排序/查找
 
 ### 排序
@@ -456,7 +484,96 @@ public static int maxHeight(TreeNode root){
 
 思路是只要左边的最大值小于当前节点的数而右边最小的数值大于当前节点就可以
 
-```java
+#### 构造树
 
+##### 前中序
+
+```java
+public static TreeNode buildTree2(int[] preorder, int[] endorder) {
+        int n = preorder.length;
+        if (n == 0)
+            return null;
+        int rootVal = preorder[0], rootIndex = 0;
+        for (int i = 0; i < n; i++) {
+            if (endorder[i] == rootVal) {
+                rootIndex = i;
+                break;
+            }
+        }
+        TreeNode root = new TreeNode(rootVal);
+        root.left = buildTree(Arrays.copyOfRange(preorder, 1, 1 + rootIndex), Arrays.copyOfRange(endorder, 0, rootIndex));
+        root.right = buildTree(Arrays.copyOfRange(preorder, 1 + rootIndex, n), Arrays.copyOfRange(endorder, rootIndex + 1, n));
+
+        return root;
+    }
+
+    public static String print(int[] n){
+        StringBuilder stringBuilder = new StringBuilder();
+        for(int i :n){
+            stringBuilder.append(i);
+        }
+        return stringBuilder.toString();
+    }
 ```
 
+#### 前序
+
+```java
+//先序
+    public static void preOrder(TreeNode node , List<Integer> list){
+        if(node == null)
+            return;
+        list.add(node.val);
+        preOrder(node.left,list);
+        preOrder(node.right,list);
+    }
+
+    public static List<Integer> endorderTraversal(TreeNode root) {
+        List<Integer> arrayList = new ArrayList<>();
+        endOrder(root,arrayList);
+        return arrayList;
+    }
+```
+
+中序后序同理
+
+### 递归
+
+爬楼梯
+
+```java
+	public static int numWays(int n) {
+        if(n < 2)
+            return 1;
+        int a = 1, b = 1,sum = 0;
+        for (int i = 2; i <= n; i++) {
+            sum = (a + b) % 1000000007;
+            a = b;
+            b = sum;
+        }
+        return sum;
+    }
+
+    /**
+     * hhh,这种写法直接超时,但是easy
+     * @param n
+     * @return
+     */
+    public int numWays2(int n) {
+        if(n < 2)
+            return 1;
+        return (numWays2(n-1) + numWays2(n-2))%1000000007;
+    }
+```
+
+### 雪花算法
+
+一般用于用户id的创建，唯一ID生成算法，且具备有序性和可扩展性。
+
+生成出的ID是一个64bits的整数，其中时间戳占41位，数据中心ID占5位，机器ID占5位，自增序列占12位，还有1位是符号位。
+
+先了解一下为什么要用这个算法
+
+- 创建用户id如果通过数据库id自增的方式：
+
+  那每次插入数据都会占用自增锁和插入锁

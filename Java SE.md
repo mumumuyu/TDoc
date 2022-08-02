@@ -2341,6 +2341,12 @@ public static Student student;
 
 - 分区
 
+- 反转，再变Int[]
+
+  ```java
+  list.stream().sorted((pre, next) -> -1).mapToInt(Integer::intValue).toArray();
+  ```
+
 ### java 锁
 
 Java（1.6+）中锁的状态一共有四种，级别由低到高分别是：**无锁、偏向锁、轻量级锁、重量级锁**，这几个状态会随着竞争情况逐渐升级，其中锁可以升级，但是不能降级。Java中加锁的最简单方式就是加synchronized关键字。
