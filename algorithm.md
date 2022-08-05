@@ -364,6 +364,23 @@ public static int subarraySum2(int[] nums, int k) {
 }
 ```
 
+得到最大和子数组
+
+```java
+public static int maxSubArray(int[] nums){
+    int maxSum = Integer.MIN_VALUE;
+    int minSum = 0,sum = 0;
+    for (int num:nums){
+        sum += num;
+        maxSum = Math.max(maxSum,sum-minSum);
+        minSum = Math.min(minSum,sum);
+    }
+    return maxSum;
+}
+```
+
+
+
 ### 字符串
 
 ##### 暴力匹配

@@ -28,7 +28,7 @@ jvm中类加载器的认识	rt-jar ext application
 
 GC垃圾回收在堆Heap与方法区中，而jvm调优就几乎都在堆中
 
-![image-20220328202415815](C:\Users\L\Desktop\文档\photo\image-20220328202415815-16511122258921.png)
+![image-20220328202415815](.\photo\image-20220328202415815-16511122258921.png)
 
 详细完整版：
 
@@ -139,7 +139,7 @@ jdk1.6引入Domain，域，不同域有不同的操作权限，就好像Linux分
 - 3、当栈调用深度大于栈深度时就会出现StackOverFlowError的错误，程序会停下来。
 - 4、若栈的深度是可扩展的（不够时申请内存）
 
-![image-20220403210258221](C:\Users\L\Desktop\文档\photo\image-20220403210258221-16511122629592.png)
+![image-20220403210258221](.\photo\image-20220403210258221-16511122629592.png)
 
 - **栈里面会放什么东西那？**
 
@@ -245,7 +245,7 @@ Full GC，GC
   
   - 1、Java虚拟机的堆内存设置不够，尝试扩大堆内存，可以通过参数 -Xms（初始值大小），-Xmx（最大大小）来调整。-XX:+PrintGCDetails （打印GC细节）
   
-    扩展VM选项在这![image-20220404124317308](C:\Users\L\Desktop\文档\photo\image-20220404124317308-16511122706123.png)
+    扩展VM选项在这![image-20220404124317308](.\photo\image-20220404124317308-16511122706123.png)
   
   - 2、代码中创建了大量大对象，并且长时间不能被垃圾收集器收集（存在被引用）或者死循环。
 
@@ -298,13 +298,13 @@ MAT（Eclipse），Jprofiler工具分析OOM原因
 
 -Xmx2056m -Xms1024m -XX:+HeapDumpOnOutOfMemoryError
 
-![image-20220404143806508](C:\Users\L\Desktop\文档\photo\image-20220404143806508-16511122726544.png)
+![image-20220404143806508](.\photo\image-20220404143806508-16511122726544.png)
 
 打开Dump文件进行分析
 
 找到犯错位置
 
-![image-20220404162344922](C:\Users\L\Desktop\文档\photo\image-20220404162344922-16511122738535.png)
+![image-20220404162344922](.\photo\image-20220404162344922-16511122738535.png)
 
 ##### 15.GC（垃圾回收器）
 
@@ -364,6 +364,160 @@ GC两种类型为Minor GC & FULL GC(Major GC)
   ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210621225533583.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzQ2MTUzOTQ5,size_16,color_FFFFFF,t_70#pic_center)
 
 
+
+GC垃圾回收器类型(1.7/1.8)：
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20210426155121384.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xpX2NfeWFuZw==,size_16,color_FFFFFF,t_70)
+
+**两个收集器间有联系表示他们可以搭配使用：**
+Serial/Serial Old ，Serial/CMS ，ParNew/CMS，ParNew/Serial Old，Parallel Scavenge/Serial Old，Parallel Scavenge/Parallel Old ，G1；
+**Serial Old 作为CMS出现“Concurrent Mode Failure” 失败的后备预案**
+
+**并发垃圾收集器和并行垃圾收集器的区别**
+
+- 并行(Parallel)
+
+  多条垃圾收集器并行工作，用户线程仍然处于等待状态
+
+  ParNew,Parallel Scavenge,Parallel Old;
+
+- 并发(Concurrent)
+
+  用户线程和垃圾现场一起执行，用户程序在继续运行，而垃圾收集程序线程运行于另一**个CPU上；如 CMS G1 (也有并行)；**
+
+**Minor GC和Full GC的区别**
+
+- Minor GC：又成为新生代GC，指发生在新生代的垃圾收集动作；
+
+  因为Java 对象大多是朝生夕死，所以Minor GC非常频繁，一般回收速度也比较快；
+
+- Full GC：又称Major GC或者老年GC，指发生在老年代的GC;
+
+  出现Full GC经常伴随至少一次的Minor GC(不是绝对的，Parallel Scavenge收集器就可以设置Majar GC的策略)
+
+吞吐量与收集器
+
+**吞吐量（Throughput）**
+CPU用于运行用户代码的时间与CPU总消耗时间的比值；
+即吞吐量=运行用户代码时间 / （运动用户代码时间+垃圾回收时间）；
+高吞吐量即减少垃圾收集时间，让用户代码获取更长的运行时间；
+
+垃圾收集器关注的目标
+
+- 停顿时间
+
+  停顿时间越短就适合需要与用户交互的程序；
+
+  良好的响应速度提升用户体验；
+
+- 吞吐量
+
+  高吞吐量则可以高效率利用CPU时间，尽快完成运算的任务；
+
+  主要适合在后台计算而不需要太多交互的任务；
+
+- 覆盖率
+
+  在达到前面两个目标的情况下，尽量减少堆内存的空间；
+
+  可以获取更好的空间局部性；
+
+详细介绍：
+
+1. Serial
+
+   串行收集器是最基本，最老的收集器，jdk1.3.1前HotSpot新手代唯一选择
+
+   新生代，复制算法，单线程，简单高效，-XX:+UseSerialGC
+
+   ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210426164202298.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xpX2NfeWFuZw==,size_16,color_FFFFFF,t_70)
+
+2. ParNew
+
+   为Serial的多线程版，单CPU环境下不如Serial
+
+   “-XX:+UseConcMarkSweepGC”：指定使用CMS后，会默认使用ParNew作为新生代收集器；
+   “-XX:+UseParNewGC”：强制指定使用ParNew;
+   “-XX:ParallelGCThreads”：指定垃圾回收的线程数量，ParNew默认开始的线程数和cpu的数目相同；
+
+   **为什么只有ParNew能和CMS配合**
+   CMS是Hotspot在jdk1.5推出的真正意义上的并发（Concurrent）收集器，第一次实现了让垃圾收集线程和用户线程同时工作；
+   (为了缩短GC时用户线程停顿时间)CMS作为老年代收集器，但却无法与1.4已经存在的新生代收集器Parallel Scavenge 配合工作；
+   因为Parallel Scavenge （以及G1）都没有使用传统的GC收集器代码框架，而是另外独立实现，而其余的几种收集器公用了部分框架代码；
+
+3. Parralel Scavenge
+
+   专注于控制吞吐量
+
+   1. 只需设置好内存数据大小（如“-Xmx”设置最大堆）
+   2. 然后使用"-XX:MaxGCPauseMillis" 或者 "-XX:GCTimeRatio"给jvm设置一个优化目标
+   3. 其它具体细节参数的调节就由JVM自适应完成；
+     这也是Parallel Scavenge 收集器与ParNew收集器一个重要区别；
+
+4. Serial Old
+
+   Serial 的老年代版本，使用标记整理法，单线程
+
+5. Parallel Old
+
+   Parallel Scavenge的老年代版本，多cpu的场景；
+
+   “-XX:+UseParallelOldGC”：指定使用Parallel Old 收集器；
+
+6. CMS收集器
+
+   并发标记清理(Concurrent Mark Sweep)，但是它不压缩整理，所以会有很多内存碎片。
+
+   老年代，最短回收停顿时间为目标，第一次让GC与用户线程基本上同时工作
+
+   “-XX:+UseConcMarkSweepGC”:指定使用CMS收集器；
+
+   **CMS收集器运作的过程**
+
+   - 初始标记
+
+     仅标记一下GC Roots能直接关联到的对象；速度很快，但是需要stop the would;
+
+   - 并发标记
+
+     进行GC Roots Tracing的过程；刚才产生的集合中标记出存活对象；应用程序也在进行；并不能保证可以标记出所有的存活对象；
+
+   - 重新标记（CMS remark）
+
+     为了修改并发标记期间用户程序继续运作而导致标记变动的那一部分对象的标记记录；需要"stop the world" ，且停顿时间比初始标记稍长，但是远比并发标记短；
+
+     采用多线程并发执行来提升效率；
+
+   - 并发清除
+
+     回收所有的垃圾对象；
+
+     整个过程中消耗时间最长的并发标记和并发清除，都可以与用户线程一起工作，所以整体来说，CMS收集器的内存回收过程与用户线程一起并发执行；
+
+   ![在这里插入图片描述](https://img-blog.csdnimg.cn/2021042709242885.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xpX2NfeWFuZw==,size_16,color_FFFFFF,t_70)
+
+   - CMS的默认收集器数量= （cpu数量+3）/4；无法处理浮动垃圾，出现Concurrent Mode Failure，CMS失败后会临时调用Serial Old，第一次Full GC产生，代价很大，所以CMSInitiatingOccupancyFraction不能设置太大，要留一定预留空间。
+
+   总之，CMS虽然减少了老年代GC时的应用暂停时间，但是增加了新生代应用暂停时间，降低吞吐量且占用大量堆空间
+
+7. G1，jdk-u4
+
+   针对于多处理器，大内存机器，提供大堆、低GC延迟方案
+
+   当：
+
+   - 一半以上堆被活动数据占用
+   - 对象分配频繁，年代提升频率变化大
+   - GC停顿过长(>0.5~1s)
+
+   “-XX:+UseG1GC”：指定使用G1收集器；
+   “-XX:InitiatingHeapOccupancyPercent”:当整个java堆的占用率达到参数值时，开始开发标记阶段，默认为45；
+   “-XX:MaxGCPauseMillis”:为G1设置暂停时间，默认为200毫秒；
+   “-XX:G1HeapRegionSize”:设置每个Region大小，范围1MB到32MB;目标是在最小Java堆时可以拥有约2048个Region
+
+总结：
+
+![image-20220805091616122](.\photo\image-20220805091616122.png)
 
 ##### 16.JMM
 
