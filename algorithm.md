@@ -323,7 +323,9 @@ public static boolean isBadVersion(int n){
 它右指针遍历数组，左指针为了让值偏向于目标而向右滑动
 
 ```java
-//滑动窗口，妙啊
+	//滑动窗口，妙啊
+	//滑动窗口模板，l是窗口左边界，r是窗口右边界，窗口中的值一定是连续值。
+    //当窗口中数字和小于target时，r右移; 大于target时，l右移; 
     public static int numSubarrayProductLessThanK(int[] nums, int k) {
         int start = 0, end = 0, product = 1, count = 0;
         while (end < nums.length){
