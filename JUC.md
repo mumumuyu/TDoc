@@ -1134,7 +1134,7 @@ JMM关于synchronized的两条规定：
 
 synchronized底层由于采用了字节码指令**monitorenter**和**monitorexit**来隐式地使用这lock和unlock两个操作，使得其操作具有原子性。
 
-**unsafe**一个很神奇的类
+**unsafe**一个很神奇的类（全是本地方法），使用它可以实现CAS(自旋锁,乐观锁)操作(3个参数：待修改的内存地址，期望值，修改值)，ABA问题用AtomicRefrence进行版本号控制，当然自选过久也耗费CPU资源
 
 ### 18.深入单例模式
 

@@ -146,11 +146,23 @@ java只有值传递
 ​								.getDecoder().decode(encoded)变byte[]
 
 - char 16
+
 - short 16
+
 - int 32
+
+  (关于java里的编码)
+
+  1 就是 000...00(31位)1
+
+  -1 就是 先同上,再有数据部分取反，再去前面0把剩余都取反就变1111111111..11(32个1)
+
 - float 32
+
 - long 64
+
 - double 64
+
 - boolean ~，1bit 就可以表示他的值true or false，JVM会把boolean 变成 int ,0 为 false , 1 为true.JVM 支持 boolean 数组，但是是通过读写 byte 数组来实现的。
 
 ##### 包装类型

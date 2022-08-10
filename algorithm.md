@@ -1,5 +1,71 @@
 ## algorithm
 
+### ACM输入输出
+
+```java
+import java.util.Scanner;
+
+Scanner in = new Scanner(System.in);
+//连续整数
+while(in.hasNext()){
+    int a = in.nextInt();
+}
+//有限整数
+int n = in.nextInt();
+while(n-- >0){
+    int a = in.nextInt();
+}
+
+//空格分开的整数
+while(in.hasNext()){
+    String[] temp = in.nextLine().split(" ");
+    for(String s:temp){
+        
+    }
+}
+//***********************************************
+
+//使用BufferedReader or InputStreamReader
+BufferedReader br = new BufferedReader(new INputtreamReader(System.in));
+
+String line = br.readLine();
+
+// 多整数
+line.trim().split(" ");
+
+// 第一行 两个数 后面跟一个数组
+while(sc.hasNext()){
+    int n = sc.nextInt();
+    int l = sc.nextLong();
+    long[] nums = new long[n];
+    for(int i = 0;i<n;i++){
+        nums[i] = sc.nextLong();//l最大10亿>2亿
+    }
+    
+    //输出保留2位
+    System.out.println(String.format("%.2f",gap/2.0));
+}
+
+//简单模板
+import java.util.Scanner;
+
+public class Main{
+    public static void main(String[] args){
+        Scanner sc = new Scanner(System.in);
+        while(sc.hasNext()){
+            int a = sc.nextInt();
+            int b = sc.nextInt();
+            
+            System.out.println(a + b);
+        }
+    }
+}
+
+String.join(" ",strings);
+```
+
+
+
 ### 链表
 
 ##### 反转链表（三种）
@@ -105,6 +171,72 @@ public static ListNode addTwoNumbers2(ListNode l1, ListNode l2) {
         return node.next;
     }
 ```
+
+##### 约瑟夫环
+
+😅随手写一个，超时了
+
+```java
+		public static int lastRemaining(int n, int m) {
+        if(n == 1) return 0;
+        if(m == 1) return n-1;
+
+        ListNode head = new ListNode(0);
+        ListNode node = head;
+        for (int i = 1; i < n; i++) {
+            node.next = new ListNode(i);
+            node = node.next;
+        }
+        node.next = head;
+        int count = n;
+        while(count != 1){
+            int buShu = m-2;
+            while(buShu != 0){
+                head = head.next;
+                buShu -= 1;
+            }
+            head.next = head.next.next;
+            head = head.next;
+            count --;
+        }
+        return head.val;
+    }
+```
+
+用ArrayList模拟循环链表
+
+```java
+	public static int lastRemaining3(int n, int m) {
+        List<Integer> lists = new ArrayList<>(n);
+
+        for (int i = 0; i < n; i++) {
+            lists.add(i);
+        }
+
+        int index = 0;
+        while(n>1){
+            index = (index + m - 1) % n;
+            lists.remove(index);
+            n--;
+        }
+        return lists.get(0);
+    }
+```
+
+数学方法反推位置——神中神
+
+每次(当前index + 移动位数) % 上一轮剩余个数
+
+```java
+	public static int lastRemaining2(int n, int m) {
+        int index = 0;
+        for (int i = 2 ; i < n ; i ++){
+            index = (index + m) % i;
+        }
+    }
+```
+
+### 回溯算法
 
 
 

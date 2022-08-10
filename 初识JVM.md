@@ -445,14 +445,14 @@ CPU用于运行用户代码的时间与CPU总消耗时间的比值；
    (为了缩短GC时用户线程停顿时间)CMS作为老年代收集器，但却无法与1.4已经存在的新生代收集器Parallel Scavenge 配合工作；
    因为Parallel Scavenge （以及G1）都没有使用传统的GC收集器代码框架，而是另外独立实现，而其余的几种收集器公用了部分框架代码；
 
-3. Parralel Scavenge
+3. Parallel Scavenge
 
    专注于控制吞吐量
 
    1. 只需设置好内存数据大小（如“-Xmx”设置最大堆）
    2. 然后使用"-XX:MaxGCPauseMillis" 或者 "-XX:GCTimeRatio"给jvm设置一个优化目标
    3. 其它具体细节参数的调节就由JVM自适应完成；
-     这也是Parallel Scavenge 收集器与ParNew收集器一个重要区别；
+       这也是Parallel Scavenge 收集器与ParNew收集器一个重要区别；
 
 4. Serial Old
 
