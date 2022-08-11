@@ -238,7 +238,7 @@ public static ListNode addTwoNumbers2(ListNode l1, ListNode l2) {
 
 ### 回溯算法
 
-
+差不多就是下一步行不通就继续在上一步的基础上做
 
 ## 排序/查找
 
@@ -342,6 +342,8 @@ public static void quickSort3(int[] arr,int low,int high){
 ```
 
 ##### 堆排序
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/ea7b5663158e4148970351e05fd5a7b9.png)
 
 
 

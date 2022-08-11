@@ -1850,8 +1850,15 @@ Print
 
 - **序列化 Serializable serialVersionUID**
 
+  ```java
+  //例如这种 较大且为static final
+  private static final long erialVersionUID = 2611556444074013268L;
+  ```
+  
+  
+  
   transient 透明的 序列化就不考虑这个属性
-
+  
   Exrernalizable
 
 ##### 多线程

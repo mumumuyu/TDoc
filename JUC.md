@@ -1475,5 +1475,60 @@ class MyDeadThread implements Runnable{
 1. 日志
 2. 堆栈信息,Jprofile,jps -l, jstack 进程号
 
-小结：
+### 个人练习小实例：
 
+使用雪花算法异步生成3000个ID
+
+```java
+	/**
+     * 破案了，用的HashSet怪不得数字对不上，哈哈哈
+     * 1.用future.isDone()
+     * 2.使用辅助类CyclicBarrier,执行完N次做XXX
+     */
+    public static void main(String[] args) throws InterruptedException {
+        SnowflakeIdWorker idWorker = new SnowflakeIdWorker(0, 0);
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 16, 30, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
+        CopyOnWriteArraySet<Long> sets = new CopyOnWriteArraySet<>();
+        ArrayList<Future<AtomicInteger>> lists = new ArrayList<>(10);
+        CyclicBarrier barrier = new CyclicBarrier(10,()->{
+            System.out.println(" SUM " + sets.size());
+        });
+
+        for (int i = 0; i < 10; i++) {
+            lists.add(runA(threadPoolExecutor, idWorker, sets,barrier));
+        }
+
+        threadPoolExecutor.shutdown();
+/*        while(true){
+            boolean flag = true;
+            for(Future<AtomicInteger> future: lists) {
+                if(!future.isDone())
+                    flag = false;
+            }
+            if (flag) {
+                //为正常之和说明没有重复   SUM 100000
+                System.out.println(" SUM " + sets.size());
+                break;
+            }
+            TimeUnit.SECONDS.sleep(3);
+        }*/
+
+    }
+
+    public static Future<AtomicInteger> runA(ThreadPoolExecutor threadPoolExecutor,SnowflakeIdWorker idWorker,CopyOnWriteArraySet<Long> sets,CyclicBarrier barrier)  {
+        return threadPoolExecutor.submit(() -> {
+            AtomicInteger ai = new AtomicInteger(0);
+            for (int i = 0; i < 10000; i++) {
+                long id = idWorker.nextId();
+                sets.add(id);
+                ai.getAndAdd(1);
+            }
+            barrier.await();
+            return ai;
+        });
+    }
+```
+
+结果，简简单单~
+
+![image-20220811102836809](/image-20220811102836809.png)

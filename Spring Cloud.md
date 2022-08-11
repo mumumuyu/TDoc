@@ -64,7 +64,7 @@ http
 
 由于网络不可靠，可能丢包，丢数据...
 
-![image-20220114153343580](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220114153343580.png)
+![image-20220114153343580](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220114153343580.png)
 
 什么是微服务？
 
@@ -205,15 +205,33 @@ self-preservaton可以设置为false，自我保护机制就关掉了
     }
 ```
 
-![image-20220118134911624](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220118134911624.png)
+![image-20220118134911624](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220118134911624.png)
 
 #### 搭建集群
 
 集群好处：其中一个服务点崩了，其他集群可以继续保证其使用。
 
-![image-20220118142336727](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220118142336727.png)
+![image-20220118142336727](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220118142336727.png)
 
 搭建成功
+
+#### **RPC**（Remote Procedure Call）
+
+**RMI**(Remote Method Invocation)远程方法调用是一种计算机之间利用远程对象互相调用实现双方通讯的一种通讯机制。使用这种机制，某一台计算机上的对象可以调用另外一台计算机上的对象来获取远程数据。RMI是Enterprise JavaBeans的支柱，是建立分布式Java应用程序的方便途径。在过去，**TCP/IP**套接字通讯是远程通讯的主要手段，但此开发方式没有使用面向对象的方式实现开发，在开发一个如此的通讯机制时往往令程序员感觉到乏味，对此RPC(Remote Procedure Call）应运而生，它使程序员更容易地调用**远程程序**，但在面对复杂的信息传讯时，RPC依然未能很好的支持，而且RPC未能做到面向对象调用的开发模式。针对RPC服务遗留的问题，RMI出现在世人面前，它被设计成一种面向对象的通讯方式，允许程序员使用远程对象来实现通信，并且支持多线程的服务，这是一次远程通讯的***，为远程通信开辟新的里程碑。
+
+RMI的开发步骤
+
+先创建远程接口及声明远程方法，注意这是实现双方通讯的接口，需要继承Remote
+
+开发一个类来实现远程接口及远程方法，值得注意的是实现类需要继承UnicastRemoteObject
+
+通过javac命令编译文件，通过java -server 命令注册服务，启动远程对象
+
+最后客户端查找远程对象，并调用远程方法
+
+单点登录
+
+![img](https://img-blog.csdnimg.cn/724392568bd544de9dd0ad456e1cf83a.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBATGl16aOO,size_20,color_FFFFFF,t_70,g_se,x_16)
 
 #### CAP原则
 
@@ -285,15 +303,15 @@ AvailabilityFilteringRule ： 会先过滤掉，跳闸，访问故障的服务~�
 
 一个微服务，三个节点提供服务
 
-![image-20220118153910278](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220118153910278.png)
+![image-20220118153910278](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220118153910278.png)
 
 访问请求由注册中心进行调度，可能接收到不同服务器节点的响应
 
-![image-20220118153820260](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220118153820260.png)
+![image-20220118153820260](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220118153820260.png)
 
-![image-20220118153834836](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220118153834836.png)
+![image-20220118153834836](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220118153834836.png)
 
-![image-20220118153843869](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220118153843869.png)
+![image-20220118153843869](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220118153843869.png)
 
 自定义负载均衡的算法：
 
@@ -598,7 +616,7 @@ public class DeptHystrixDashboard_9001 {
 
 #### hystrix可以监控
 
-![image-20220120143650924](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220120143650924.png)
+![image-20220120143650924](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220120143650924.png)
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201121162612484.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzU5MTk4MA==,size_16,color_FFFFFF,t_70#pic_center)
 
@@ -733,7 +751,7 @@ springcloud配置中心把服务分为服务端和客户端
 
 通过springcloud-config，访问git库某文件成功！
 
-![image-20220120173415386](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220120173415386.png)
+![image-20220120173415386](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220120173415386.png)
 
 流程
 
@@ -751,7 +769,7 @@ public class ConfigServer_3344 {
 
 进行git配置
 
-```
+```yml
 server:
   port: 3344
 spring:
@@ -801,7 +819,7 @@ pom
 
 消费者通过服务端获取信息
 
-![image-20220120205617583](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220120205617583.png)
+![image-20220120205617583](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220120205617583.png)
 
 ```java
 @RestController
@@ -840,7 +858,7 @@ spring:
 
 实战：自己远程配置eureka以及provider的config
 
-![image-20220121135059897](C:\Users\Asus\AppData\Roaming\Typora\typora-user-images\image-20220121135059897.png)
+![image-20220121135059897](C:\Users\L\AppData\Roaming\Typora\typora-user-images\image-20220121135059897.png)
 
 成功！！！
 
