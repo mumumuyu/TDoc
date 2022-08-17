@@ -146,6 +146,12 @@ java只有值传递
 ​								.getDecoder().decode(encoded)变byte[]
 
 - char 16
+  ```java
+  //使用一下判断一个字符是否为小写
+  Character.isLowerCase(a)
+  //或者
+  (a>='a' && a <= 'z')
+  ```
 
 - short 16
 
