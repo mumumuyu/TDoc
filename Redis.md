@@ -90,7 +90,7 @@ MongDB，文档型数据库
 商品交易，外部支付接口  三方应用，支付宝，微信之类
 ```
 
-## Nosql四大分类
+### Nosql四大分类
 
 Redis6开始支持多线程
 
@@ -117,6 +117,31 @@ KV键值对
 - 放的是关系
 
 ![image-20220405154611414](C:\Users\L\Desktop\文档\photo\image-20220405154611414.png)
+
+NoSql有以下四大类型:
+
+1.key-value键值存储数据库:
+相关产品: Redis、Riak、SimpleDB、Chordless、Scalaris、Memcached
+主要应用: 内容缓存,处理大量数据的高负载访问,也用于系统日志
+优点:查找速度快,大量操作时性能高
+
+2.列存储数据库:
+相关产品: BigTable、HBase、Cassandra、HadoopDB、GreenPlum、PNUTS
+主要应用: 分布式数据的储存与管理
+优点:查找速度快,可扩展性强,容易进行分布式扩展
+缺点:功能相对局限
+
+3.文档型数据库
+相关产品:MongoDB、CouchDB、ThruDB、CloudKit、Perservere、Jackrabbit
+主要应用: web应用,管理面向文档的数据或者类似的半结构化数据
+优点:数据结构灵活,表结构可变,复杂性低
+缺点:查询效率低,且缺乏统一的查询语言
+
+4.Graph图形数据库
+相关产品: Neo4J、OrientDB、InfoGrid、GraphDB
+主要应用: 复杂,互连接,低结构化的图结构场合, 专注构建关系图谱
+优点: 利用图结构相关算法, 可用于构建复杂的关系图谱
+缺点: 复杂度高
 
 安装嘛就不说啦，之前就自己装好了
 
