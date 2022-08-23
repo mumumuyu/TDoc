@@ -16,11 +16,45 @@ jvm中类加载器的认识	rt-jar ext application
 
 不知道就对了
 
+**对象头**
 
+- 第一部分存储对象自身的运行时数据:HashCode,GC分代年龄(默认大于15进老年代)，锁状态标志(无锁，偏向锁，轻量级锁，重量级锁)，线程池有的锁，偏向线程ID与偏向时间戳
+
+  关于CAS将synchronized与对象头升级
+
+  ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210714210744596.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl81Mjk4MzEzNw==,size_16,color_FFFFFF,t_70)
+
+  轻量级锁如自旋锁：线程栈创建Lock Record对象，当抢到锁资源时，在对象头存入该线程Lock Record的指针，重入时再创一个，来记录到底锁了多少次
+
+  重量级锁利用队列
+
+  ![img](https://imgconvert.csdnimg.cn/aHR0cHM6Ly9vc2NpbWcub3NjaGluYS5uZXQvb3NjbmV0L3VwLTk0YzM2MzBkNmE4ZTIyNWNiNTI5NGU2YWFjNTQwNDRhY2Y2LnBuZw?x-oss-process=image/format,png)
+
+      (1) 琐升级路线：new -> 偏向锁 -> 轻量级琐(自旋锁、自适应自旋锁) -> 重量级琐
+      
+      (2) 如果偏向锁没有启动，那么new出来的对象是普通对象；如果偏向锁已经启动，那么new出来的对象就是匿名偏向对象。
+      
+      (3) 偏向锁什么情况下转为轻量级琐呢？只要有2个线程竞争同一个琐资源，所有线程都升级为轻量级琐，也就是都会自旋抢占琐资源。
+      
+      (4) 自旋锁在竞争资源的时候，也是CAS操作，用CAS的方式修改琐对象的mackword。
+      
+      (5) 自旋锁升级为重量级琐需要符合什么条件呢？jdk1.6以前，某个线程自旋次数上限达到默认的10次，会升级为重量级锁，因为一直自旋消耗CPU资源；自旋线程数量达到了默认是系统的CPU核数的1/2的时候，全部升级为重量级琐进入等待队列。jdk1.6之后，jdk提供了自适应自旋，jdk根据每个线程的运行情况来判断是否需要升级。
+
+- 二为类型指针，对象指向元数据指针，java数组还有一块记录长度length因为普通对象可以根据对象元数据确定大小，而数组不可以
 
 ##### 1.JVM位置
 
-首先是硬件，再之上那必然是运行在操作系统(Windows,Linux,Mac)上的，JVM用C写的（Java叫"C++--"），再之上java的运行环境JRE--JVM，
+首先是硬件，再之上那必然是运行在操作系统(Windows,Linux,Mac)上的，JVM用C写的（Java叫"C++--"），再之上java的运行环境JRE--JVM
+
+JVM:PC寄存器，Java虚拟机栈，本地方法栈，方法区(运行时常量池)，堆
+
+其中：线程私有：PC寄存器，本地方法栈，Java虚拟机栈
+
+线程共享：堆，方法区(运行时常量池)
+
+对于运行时常量池，其在jdk1.8之后被放入堆中，当类被加载后，他的常量池信息会被方法运行时常量池并将符号信息变为真实地址，然后当执行代码时，发现常量池内容不在运行时常量池时才会去加载(延时加载)，当常量不被引用时会被GC回收。
+
+运行时常量池是一个固定大小的Hashtable（数组+链表+红黑树【jdk8以后】）
 
 ##### 2.JVM体系结构
 
@@ -119,7 +153,7 @@ jdk1.6引入Domain，域，不同域有不同的操作权限，就好像Linux分
 
 ##### 8.方法区
 
-被线程所共享，所有构造方法，接口，函数，在此定义。为共享区间，static,final 类信息（构造方法，接口定义）运行时的常量池存在于方法区中。
+被线程所共享，所有构造方法，接口，函数，在此定义。为共享区间，存储基本数据类型，字符串(1.7后移至堆)，static,final 常量，类信息（构造方法，接口定义）运行时的常量池存在于方法区中。
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210621224842497.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzQ2MTUzOTQ5,size_16,color_FFFFFF,t_70#pic_center)
 
@@ -174,7 +208,7 @@ IBM j9 VM在Oracle开发的基础上开发的
 - 类加载器读取了类文件后，需要把类，方法，常变量放到堆内存中，保存所有引用类型的真实信息，以方便执行器执行。
 - 堆内存分为三部分：
   - 新生区 Young Generation Space Young/New 1/3
-  - 养老区 Tenure generation space Old/Tenure  2/3
+  - 养老区 Tenure generation space Old/Tenure  2/3 (因为养老区存活率高，大点可以存更多需要的)
   - 永久区 Permanent Space Perm
 
 - 堆内存逻辑上分为三部分：新生，养老，永久（元空间 : JDK8 以后名称）。
@@ -185,6 +219,29 @@ IBM j9 VM在Oracle开发的基础上开发的
 - 在JDK8以后，永久存储区改了个名字(元空间)。
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210621225049387.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzQ2MTUzOTQ5,size_16,color_FFFFFF,t_70#pic_center)
+
+OOM:
+
+- 内存溢出，常见，如Heap space full，永久代full（动态加载过多java类）
+
+- 内存泄露(不再使用的对象无法回收)
+
+  原因：JVM使用引用计数法和可达性分析来判断一个对象是否还在使用，有时会出现对象已不再使用，但是jvm仍然认为该对象有引用，就会出现
+
+  具体原因：
+
+  - 代码未及时释放，存在引用
+  - 各种连接的资源，使用完没有进行释放
+  - 用到了静态集合类
+  - 堆外内存
+
+  方案：
+
+  - 减少使用static变量，使用完及时赋值null
+  - 缩小作用域，让其变为局部变量，这样局部变量弹栈会自动回收
+  - 不让长生命周期的对象持有短生命周期的引用
+  - 能用StringBuilder/StringBuffer不用多个String进行拼接(造成临时字符串)
+  - 各种连接用完close()
 
 ##### 12.新生区，老年区
 
@@ -308,7 +365,7 @@ MAT（Eclipse），Jprofiler工具分析OOM原因
 
 ##### 15.GC（垃圾回收器）
 
-jvm在进行GC时，并非在三个区域统一回收，基本都是在新生代
+jvm在进行GC时（通过引用计数法和可达性分析判断对象是否还有引用，没有就进行回收），并非在三个区域统一回收，基本都是在新生代
 
 - 新生代
 - 幸存区（from, to）
