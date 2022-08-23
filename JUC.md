@@ -1477,7 +1477,7 @@ class MyDeadThread implements Runnable{
 
 ### 个人练习小实例：
 
-使用雪花算法异步生成3000个ID
+使用雪花算法异步生成100000个ID
 
 ```java
 	/**

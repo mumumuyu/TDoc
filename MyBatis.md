@@ -841,5 +841,94 @@ Weak-弱引用，更积极基于垃圾收集器状态
 
 
 
+# MyBatis-Plus
+
+虽然用过，稍微补一下吧
+
+JPD tk-mapper MyBatisPlus,自动生成CRUD代码
+
+特性：
+
+- 强大CRUD：通过内置通用Mapper，通用Service，实现单表大部分CRUD操作
+- Lambda形式调用
+- 主键自动生成
+- 内置分页插件
+- 内置性能分析插件
+- 内置全局拦截插件
+
+使用
+
+注意启动类加上类似@MapperScan("com.lgd.mapper")
+
+```xml
+		<dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.3.0</version>
+        </dependency>
+```
+
+```java
+public interface UserMapper extends BaseMapper<User> {
+
+}
+```
+
+相关注解：
+
+- ```java
+  @TableName("sys_user")//表名
+  @TableId//主键
+  @TableField("nickname")//数据库对应字段名
+  ```
+
+简单进行crud
+
+```java
+	@Test
+    public void testSelect() {
+        System.out.println(("----- selectAll method test ------"));
+        List<User> userList = userMapper.selectList(null);
+        userList.forEach(System.out::println);
+    }
+
+    @Test
+    public void testInsert() {
+        System.out.println(("----- selectAll method test ------"));
+        User user = new User(11L,"lgd",17,"lgd@lgd.com");
+        int insert = userMapper.insert(user);
+        System.out.println(insert);
+    }
+
+    @Test
+    public void testUpdate() {
+        System.out.println(("----- selectAll method test ------"));
+
+        User user = new User(11L,"lgd",18,"lgd@lgd.com");
+        int insert = userMapper.updateById(user);
+        System.out.println(insert);
+    }
+
+    @Test
+    public void testDelete() {
+        System.out.println(("----- selectAll method test ------"));
+
+        User user = new User(11L,"lgd",18,"lgd@lgd.com");
+        Map<String, Object> map = new HashMap<>();
+        map.put("id",11l);
+
+        int insert = userMapper.deleteByMap(map);
+        System.out.println(insert);
+    }
+```
+
+配置日志
+
+```yml
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+```
+
 
 
