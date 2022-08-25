@@ -1,5 +1,9 @@
 # Linux
 
+小坑：喜欢按ctrl+s的你在linux会触发终端的滚动锁定
+
+按ctrl+q可以解除锁定
+
 #### Linux如何运行和停止jar包
 
 nohup java -jar Myboke.jar &
@@ -514,6 +518,24 @@ Linux系统是一种典型的多用户系统，不同的用户处于不同的地
 
 # 修改文件属性
 
+### 文件修改相关
+
+#### 创建一个文件：
+
+cd ~
+vim word.txt
+通过上面的命令就打开了vim编辑器。（需要注意的是，使用vim编辑器创建一个文件时，不管是否有扩展名.txt，都是生成文本文件。）
+
+#### 进入编辑模式：
+
+在键盘上按下字母i或者a即可开始编辑啦！
+
+#### 退出编辑模式：
+
+方式一：按下esc键，输入“:wq”3个英文字符，然后按下Enter键，表示保存文件并退出。
+方式二：按下esc键，输入“:q”两个英文字符，然后按下Enter键，表示不保存并退出。（如果本次编辑没有修改内容，则可以顺利退出；否则，vim编辑器是不会允许你退出的，这时如果想要不保存退出，就要使用下面的方法三）
+方式三：按下esc键，输入“:q!”3个英文字符，然后按Enter键，表示不保存并强制退出。
+
 ## chgrp：更改文件属组
 
 
@@ -822,7 +844,164 @@ cat: f3: No such file or directory
 
 # Shell 脚本编程
 
+2022/8/25
 
+服务器集群管理
+
+J2EE,写一些SHELL脚本或程序对服务器进行维护(比如定时备份数据库脚本)
+
+大数据必备
+
+Shell:命令行解释器，提供一个向Linux内核发送请求，以便运行程序的界面系统及程序
+
+![image-20220825114131275](C:\Users\L\Desktop\文档\photo\image-20220825114131275.png)
+
+mk dir/opt/t(xxx.sh) => Shell(命令行解释) - >Linux内核
+
+常用Bash (Basic Shell)
+
+#### 入门
+
+开头 #!/bin/bash
+
+脚本需要可执行权限
+
+1.通过输入脚本相对路径或绝对路径运行(需要可执行权限)
+
+通过 chmod u+x hello.sh 可以添加
+
+```bash
+#!/bin/bash
+echo "hello,world~"
+```
+
+```bash
+[root@lgdlgd123 shcode]# vim hello.sh
+[root@lgdlgd123 shcode]# ls
+hello.sh
+[root@lgdlgd123 shcode]# ll
+total 4
+-rw-r--r-- 1 root root 32 Aug 25 14:38 hello.sh
+# 此时还没有执行权限
+[root@lgdlgd123 shcode]# ./hello.sh
+-bash: ./hello.sh: Permission denied
+#增加权限
+[root@lgdlgd123 shcode]# chmod u+x hello.sh
+[root@lgdlgd123 shcode]# ll
+total 4
+-rwxr--r-- 1 root root 32 Aug 25 14:38 hello.sh
+[root@lgdlgd123 shcode]# ./hello.sh
+hello,world~
+```
+
+2.直接通过 sh xxx.sh运行(不需要可执行权限)
+
+
+
+#### 变量介绍
+
+系统变量：$HOME , $PWD, $SHELL, $USER ，可以通过echo $HOME 
+
+显示当前shell所有变量: set
+
+用户自定义变量：
+
+- 定义变量: xx=x
+- 撤销: unset变量
+- 静态变量声明: readonly变量 (不能unset)
+
+快速入门
+
+1. 定义变量A
+2. 撤销变量
+3. 声明静态变量B=2，不可unset
+4. 把变量提升为全局变量，供其他shell程序使用
+
+```bash
+[root@lgdlgd123 shcode]# cat var.sh
+#!/bin/bash
+A=100
+#定义不用$ 输出需要$
+echo A=$A
+
+echo "A=$A"
+#撤销变量A
+unset A
+
+echo "A=$A"
+#静态变量
+readonly B=2
+echo "B=$B"
+
+unset B
+```
+
+变量规则
+
+变量不可以用数字开头，等号两侧不可以有空格
+
+变量名称习惯为大写
+
+利用反引号，把运行里面的命令的返回值传给A
+
+```java
+A=`date`
+A=$(date)
+```
+
+#### 设置环境变量
+
+环境变量 ，即全局变量
+
+- export xx=xx 将变量输出为环境变量
+
+  注意输出环境变量前，需要让其生效
+
+  使用 source /etc/profile
+
+  ```bash
+  #直接拿，没生效
+  [root@lgdlgd123 opt]# echo $TOMCAT_HONE
+  #让修改后的配置信息立即生效
+  [root@lgdlgd123 opt]# source /etc/profile
+  [root@lgdlgd123 opt]# echo $TOMCAT_HOME
+  /www/server/tomcat
+  ```
+
+shell脚本多行注释
+
+```bash
+ 22 :<<!
+ 23 C=`date`
+ 24 lalalaa
+ 25 lalala=a
+ 26 echo lalala 
+ 27 !
+```
+
+#### 位置参数变量
+
+- $0~$9，${10} 代表第几个参数
+- $* 代表命令行中所有的参数，看作一个整体
+- $@ 代表命令行中所有的参数，不过$@把每个参数区别对待
+- $# 代表命令行中所有参数个数
+
+```bash
+[root@lgdlgd123 shcode]# sh position.sh 1 2 3 4 5
+position.sh #$0
+1 #$1
+1 2 3 4 5
+1 2 3 4 5
+5
+```
+
+#### 预定义变量
+
+实现定义好的变量
+
+- $$ 获取当前进程PID
+- #! 获取后台运行的最后一个进程PID
+- #? 最后一次执行的命令的返回状态。如果为0，说明上一条命令正确执行。否则非0说明执行不正确
 
 
 

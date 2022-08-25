@@ -882,7 +882,7 @@ public interface UserMapper extends BaseMapper<User> {
   @TableField("nickname")//数据库对应字段名
   ```
 
-简单进行crud
+### 简单进行crud
 
 ```java
 	@Test
@@ -930,5 +930,256 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 ```
 
+查询扩展
 
+```java
+//    查询操作
+    @Test
+    public void TestSelectById(){
+        User user = mapper.selectById(1);
+        System.out.println(user);
+    }
+//    测试批量查询
+    public void testSelectByBatchId(){
+        List<Integer> idList = Arrays.asList(1, 2, 3);
+        List<User> users = mapper.selectBatchIds(idList);
+        users.forEach(System.out::println);
+    }
+//    条件查询
+    @Test
+    public void testSelectByBatchIds(){
+        HashMap<String,Object> map=new HashMap<>();
+ 
+        map.put("name","狂徒张三");
+        map.put("age",13);
+ 
+        List<User> users = mapper.selectByMap(map);
+        users.forEach(System.out::println);
+    }
+//    测试分页查询
+    @Test
+    public void testPage(){
+        Page<User> page=new Page<>(1,10);
+        mapper.selectPage(page,null);
+ 
+        page.getRecords().forEach(System.out::println);
+        System.out.println(page.getTotal());
+    }
+```
+
+总的Configuration配置
+
+```java
+@Configuration
+@EnableTransactionManagement
+@MapperScan("com.lgd.mapper")
+public class MyBatisPlusConfig {
+
+/*    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        // 添加分页插件
+        PaginationInnerInterceptor pageInterceptor = new PaginationInnerInterceptor();
+        // 设置请求的页面大于最大页后操作，true调回到首页，false继续请求。默认false
+        pageInterceptor.setOverflow(false);
+        // 单页分页条数限制，默认无限制
+        pageInterceptor.setMaxLimit(500L);
+        // 设置数据库类型
+        pageInterceptor.setDbType(DbType.MYSQL);
+
+        interceptor.addInnerInterceptor(pageInterceptor);
+        return interceptor;
+    }*/
+    //    性能分析插件 3.0.5有
+    @Bean
+    @Profile({"dev","test"})
+    public PerformanceInterceptor performanceInterceptor(){
+        PerformanceInterceptor performanceInterceptor=new PerformanceInterceptor();
+        performanceInterceptor.setMaxTime(100);
+        performanceInterceptor.setFormat(true);
+        return performanceInterceptor;
+    }
+
+    // 乐观锁,字段+@Version
+    @Bean
+    public OptimisticLockerInterceptor optimisticLockerInterceptor(){
+        return new OptimisticLockerInterceptor();
+    }
+
+    //    分页插件
+    @Bean
+    public PaginationInterceptor paginationInterceptor(){
+        return new PaginationInterceptor();
+    }
+}
+```
+
+### 乐观锁
+
+乐观锁的实现方式：
+
+1.取出记录时，获取当前 version
+
+2.更新时，带上这个version
+
+3.执行更新时， set version = newVersion where version = oldVersion
+
+4.如果 version 不对，就更新失败
+1、给数据库中增加version字段
+
+
+ 2、我们实体类加对应的字段,并添加version注解
+
+    @Version
+    private Integer version;
+3.到config类中去注册组件
+
+#注册乐观锁插件
+
+```java
+@Bean
+public OptimisticLockerInterceptor optimisticLockerInterceptor(){
+    return new OptimisticLockerInterceptor();
+}
+```
+
+4.使用修改操作进行测试
+
+### 分页查询插件
+
+```java
+//1.到config类中注册插件
+
+//    分页插件
+    @Bean
+    public PaginationInterceptor paginationInterceptor(){
+        return new PaginationInterceptor();
+    }
+//2.直接使用Page对象
+
+//    测试分页查询
+    @Test
+    public void testPage(){
+        Page<User> page=new Page<>(1,10);
+        mapper.selectPage(page,null);
+    page.getRecords().forEach(System.out::println);
+    System.out.println(page.getTotal());
+	}
+```
+### 性能插件
+
+
+
+### wrapper条件改造器
+
+```java
+	@Test
+    void test1(){
+//        查询name不为空的用户，并且邮箱不为空的用户，年龄大于等于13
+        QueryWrapper<User> wrapper=new QueryWrapper<>();
+        wrapper
+                .isNotNull("name")
+                .isNotNull("email")
+                .ge("age",13);
+        mapper.selectList(wrapper).forEach(System.out::println);
+    }
+    @Test
+    void test2(){
+//      查询名字李云
+        QueryWrapper<User> wrapper=new QueryWrapper<>();
+        wrapper.eq("name","李云");
+        User user = mapper.selectOne(wrapper);
+        System.out.println(user);
+    }
+    @Test
+    void test3(){
+        // 查询年龄在 20 ~ 30 岁之间的用户
+        QueryWrapper<User> wrapper=new QueryWrapper<>();
+        wrapper.between("age",20,30);
+        Integer user = mapper.selectCount(wrapper);
+        System.out.println(user);
+    }
+    @Test
+    void test4(){
+//        模糊查询
+        QueryWrapper<User> wrapper=new QueryWrapper<>();
+        wrapper
+                .notLike("name","e")
+                .likeRight("email","qq");
+        List<Map<String, Object>> user = mapper.selectMaps(wrapper);
+//        Integer user = mapper.selectCount(wrapper);
+        System.out.println(user);
+    }
+    @Test
+    void test5(){
+        QueryWrapper<User> wrapper=new QueryWrapper<>();
+//        id在子查询中查出来
+       wrapper.inSql("id","select id from user where id<3");
+//        Integer user = mapper.selectCount(wrapper);
+        List<Object> objects = mapper.selectObjs(wrapper);
+        System.out.println(objects);
+    }
+    @Test
+    void test6(){
+//        通过id进行排序
+        QueryWrapper<User> wrapper=new QueryWrapper<>();
+        wrapper.orderByAsc("id");
+        List<User> users = mapper.selectList(wrapper);
+        users.forEach(System.out::println);
+    }
+```
+
+### 代码生成器
+
+```java
+	@Test
+    public void testAuto() {
+    //构建一个代码自动生成器对象
+    AutoGenerator mpg = new AutoGenerator();
+    //配置策略
+    //1、全局配置
+    GlobalConfig gc = new GlobalConfig();
+    String projectPath = System.getProperty("user.dir");
+        gc.setOutputDir(projectPath+"/src/main/java");
+        gc.setAuthor("LGD");
+        gc.setOpen(false);
+        gc.setFileOverride(false);
+        gc.setServiceName("%sService");
+        gc.setIdType(IdType.ID_WORKER);
+        mpg.setGlobalConfig(gc);
+    // 数据源配置
+    DataSourceConfig dsc = new DataSourceConfig();
+        dsc.setUrl("jdbc:mysql://localhost:3306/mb_p_test?charset=utf8mb4&useSSL=false");
+            dsc.setDriverName("com.mysql.cj.jdbc.Driver") ;
+        dsc.setUsername("root");
+        dsc.setPassword("1328910");
+        dsc.setDbType(DbType.MYSQL);
+        mpg.setDataSource(dsc);
+    // 包配置
+    PackageConfig pc = new PackageConfig();
+        pc.setModuleName("User");
+        pc.setParent("com.lgd");
+        pc.setEntity("pojo");
+        pc.setMapper("mapper");
+        pc.setService("service");
+        pc.setController("controller");
+        mpg.setPackageInfo(pc);
+    //策略配置
+    StrategyConfig strategy = new StrategyConfig();
+        strategy.setInclude("user");//设置映射的表名
+        strategy.setNaming(NamingStrategy.underline_to_camel);
+        strategy.setColumnNaming(NamingStrategy.underline_to_camel);
+        strategy.setEntityLombokModel(true);
+        mpg.setStrategy(strategy);
+    //自动填充
+        mpg.execute();
+    }
+```
+
+![image-20220824095657544](C:\Users\L\Desktop\文档\photo\image-20220824095657544.png)
+
+自动生成成功,确实啊，确实比Mybatis-generator好用一万倍
+
+作为偷懒工具，就先看到这了
 

@@ -269,6 +269,42 @@ Eureka满足AP
 
 因此，Eureka可以很好的应对因网络故障导致部分节点失去联系的情况，而不会像zookeeper那样使整个注册服务瘫痪一会儿
 
+### Nacos
+
+其实还有Zookeeper，Spring Cloud Alibaba的三个注册中心
+
+具体使用
+
+先准备好nacos-server ，curl
+
+```cmd
+#启动命令(standalone代表着单机模式运行，非集群模式):
+startup.cmd -m standalone
+
+#服务注册
+curl -X POST 'http://127.0.0.1:8848/nacos/v1/ns/instance?serviceName=nacos.naming.serviceName&ip=20.18.7.10&port=8080'
+
+#服务发现
+curl -X GET 'http://127.0.0.1:8848/nacos/v1/ns/instance/list?serviceName=nacos.naming.serviceName'
+
+#发布配置
+curl -X POST "http://127.0.0.1:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&group=test&content=HelloWorld"
+
+#获取配置
+curl -X GET "http://127.0.0.1:8848/nacos/v1/cs/configs?dataId=nacos.cfg.dataId&group=test"
+```
+
+Nacos持久化，在conf/application.properties
+
+```xml
+# db mysql 8需要增加allowPublicKeyRetrieval=true
+spring.datasource.platform=mysql
+db.num=1
+db.url.0=jdbc:mysql://localhost:3306/ry-config?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+db.user=root
+db.password=password
+```
+
 ### Ribbon：负载均衡
 
 所谓Load Balance负载均衡：就是让请求均摊到每台服务器上，从而达到HA（高可用）

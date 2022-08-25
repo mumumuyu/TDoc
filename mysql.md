@@ -301,6 +301,18 @@ JDBC的反射及作用
 
 需要查询realname，1.不查询realname 2.将realname加入一个索引，这就是索引覆盖
 
+### delete,drop,truncate区别
+
+delete用于删除表部分或所有数据,delete(DML Data Manipulation Language数据操纵语言)在InnoDB中只是给数据打上删除标记，可以通过将自动提交设置为set autocommit = 0，然后进行rollback看，数据还在，证明不是真的物理删除。
+
+truncate与delete类似 truncate from student where id = 5
+
+不同点是truncate不支持条件表达式，只能删除所有行数据，它是DDL语句(Data Definition Language)数据定义语言
+
+drop是删除整张表，含数据，字段，索引，truncate和delete只删除行数据
+
+执行速度drop>truncate>delete
+
 ### MVCC
 
 Multi Version Concurrency Control，多版本并发控制
