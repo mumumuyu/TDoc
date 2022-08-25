@@ -860,6 +860,19 @@ mk dir/opt/t(xxx.sh) => Shell(命令行解释) - >Linux内核
 
 常用Bash (Basic Shell)
 
+##### 1、shell脚本优势
+
+```
+批量处理，自动化
+减少人为失误
+```
+
+##### 2、shell底层的实现原理
+
+```
+shell底层也是用c语言实现的，--可以实现操控操作系统
+```
+
 #### 入门
 
 开头 #!/bin/bash
@@ -1002,6 +1015,136 @@ position.sh #$0
 - $$ 获取当前进程PID
 - #! 获取后台运行的最后一个进程PID
 - #? 最后一次执行的命令的返回状态。如果为0，说明上一条命令正确执行。否则非0说明执行不正确
+
+```bash
+[root@lgdlgd123 shcode]# sh preVar.sh
+当前执行的进程id=2654
+最后一个后台方式运行的PID id=2655
+执行的结果是0
+[root@lgdlgd123 shcode]# /root/shcode/position.sh
+
+
+
+0
+```
+
+#### 运算符
+
+- expr m + n (注意expr运算符间要有空格，\* / % 除乘取余)   或者 "$((运算式))" 或  "$[运算式]"（推荐使用）
+
+  ```bash
+  [root@lgdlgd123 shcode]# cat express.sh
+  #/bin/bash
+  A=$[( 2 + 3 ) * 4]
+  echo $A
+  
+  B=$1
+  C=$2
+  D=$[ $B + $C]
+  #D=`expr 2 + 3`
+  echo $D
+  
+  [root@lgdlgd123 shcode]# sh express.sh 1 2
+  20
+  3
+  ```
+
+#### 条件判断
+
+![image-20220825164200730](C:\Users\L\Desktop\文档\photo\image-20220825164200730.png)
+
+```bash
+[root@lgdlgd123 shcode]# sh TiaoJian.sh
+equal
+[root@lgdlgd123 shcode]# cat TiaoJian.sh
+#/bin/bash
+if [ "ok" = "ok" ]
+then
+        echo "equal"
+elif [ "ok" = "ok2" ]
+then
+        echo "noequal1"
+else
+        echo "noequal"
+fi
+```
+
+#### for循环
+
+```bash
+[root@lgdlgd123 shcode]# sh forXunHuan.sh
+hello 0
+hello 1
+hello 3
+[root@lgdlgd123 shcode]# cat forXunHuan.sh
+#/bin/bash
+SUM=0
+for ((i=0;i<3;i++))
+do
+        SUM=$[$SUM + $i]
+        echo "hello $SUM"
+done
+```
+
+seq 进制
+
+```bash
+[root@lgdlgd123 shcode]# sh seqTest.sh
+seqTest 1
+seqTest 3
+seqTest 5
+seqTest 7
+seqTest 9
+seqTest 11
+seqTest 13
+seqTest 15
+seqTest 17
+seqTest 19
+[root@lgdlgd123 shcode]# cat seqTest.sh
+#/bin/bash
+#seq 起始 步长 最大
+for i in `seq 1 2 20`
+do
+        echo "seqTest $i"
+done
+```
+
+使用{1..10}方式
+
+```bash
+for i in {1..10}
+do
+        echo "{}Test $i"
+done
+```
+
+#### case语句
+
+```bash
+[root@lgdlgd123 shcode]# sh caseTest.sh 2
+周二
+[root@lgdlgd123 shcode]# cat caseTest.sh
+#/bin/bash
+case $1 in 
+"1")
+echo "周一"
+;;
+"2")
+echo "周二"
+;;
+"3")
+echo "周三"
+;;
+"4")
+echo "周四"
+;;
+"5")
+echo "周五"
+;;
+esac
+```
+
+#### while循环
 
 
 
