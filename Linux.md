@@ -42,6 +42,29 @@ ps -ef|grep Myboke.jar 也可以通过进程查看你的jar包运行情况
 
 
 
+#### 硬件使用情况
+
+```bash
+#看cpu
+lscpu
+#查看CPU的详细信息
+cat /proc/cpuinfo
+#查看内存使用情况
+free -m
+#查看内存使用详细信息
+cat /proc/meminfo
+#查看硬盘和分区情况
+lsblk
+#查看硬盘和分区详细情况
+fdisk -l
+#查看系统版本
+cat /etc/redhat-release
+```
+
+
+
+
+
 使用：Xshell
 
 核心：对/root下文件的读，写以及权限控制
@@ -1146,7 +1169,167 @@ esac
 
 #### while循环
 
+```bash
+[root@lgdlgd123 shcode]# cat whileTest.sh
+#/bin/bash
+SUM=0
+i=0
+while [ $i -lt $1 ]
+do
+        i=$[ $i + 1  ]
+        SUM=$[ $SUM + $i ]
+done
+echo "$SUM"
+[root@lgdlgd123 shcode]# sh whileTest.sh 4
+10
+```
 
+#### read语法
+
+```bash
+[root@lgdlgd123 shcode]# sh readTest.sh
+请输入一个数NUM1=40
+您输入的数为40
+请在10秒内输入两个数NUM2 NUM33 5
+您输入的数为3 5
+[root@lgdlgd123 shcode]# sh readTest.sh
+请输入一个数NUM1=5
+您输入的数为5
+请在10秒内输入两个数NUM2 NUM3 您输入的数为 
+[root@lgdlgd123 shcode]#  cat readTest.sh
+#!/bin/bash
+read -p "请输入一个数NUM1=" NUM1
+echo "您输入的数为$NUM1"
+read -t 10 -p "请在10秒内输入两个数NUM2 NUM3" NUM2 NUM3
+echo "您输入的数为$NUM2 $NUM3"
+```
+
+函数
+
+basename：返回完整路径/最后部分，用于获取文件名，他会删除前缀
+
+```bash
+[root@lgdlgd123 ~]# basename /root/shcode/readTest.sh .sh
+readTest
+```
+
+dirname用于返回完整路径前面的部分,即文件所在路径(不含文件名)
+
+```bash
+[root@lgdlgd123 ~]# dirname /root/shcode/readTest.sh
+/root/shcode
+```
+
+#### 自定义函数
+
+[function] funname[()]
+
+{
+
+​	Action;
+
+​	[return int;]
+
+}
+
+funname [值]
+
+```bash
+[root@lgdlgd123 ~]# sh HanShuTest.sh
+请输入n1 与 n2 的值50 40
+和为90
+[root@lgdlgd123 ~]# cat HanShuTest.sh
+#!/bin/bash
+function getSum(){
+
+        SUM=$[ $n1 + $n2 ]
+        echo "和为$SUM"
+}
+
+read -p "请输入n1 与 n2 的值" n1 n2
+
+getSum $n1 $n2 
+```
+
+### 示例——备份数据库
+
+简单备份一下javaweb-test里的user表
+
+由crond 来定时调用 写好的shell脚本即可
+
+```bash
+[root@lgdlgd123 sbin]# sh mysql_db_backup.sh 
+2022-08-26_101112
+mysqldump: [Warning] Using a password on the command line interface can be insecure.
+[root@lgdlgd123 sbin]# cd /db
+-bash: cd: /db: No such file or directory
+[root@lgdlgd123 sbin]# ls
+db  mysql_db_backup.sh
+[root@lgdlgd123 sbin]# cd db
+[root@lgdlgd123 db]# ls
+2022-08-26_101112
+[root@lgdlgd123 db]# cd 2022-08-26_101112/
+[root@lgdlgd123 2022-08-26_101112]# gunzip
+gzip: compressed data not read from a terminal. Use -f to force decompression.
+For help, type: gzip -h
+[root@lgdlgd123 2022-08-26_101112]# gunzip 2022-08-26_101112.sql.gz 
+[root@lgdlgd123 2022-08-26_101112]# cat 2022-08-26_101112.sql
+```
+
+脚本
+
+```bash
+[root@lgdlgd123 sbin]# cat mysql_db_backup.sh 
+#!/bin/bash
+BACKUP=/user/sbin/db
+DATETIME=$(date +%Y-%m-%d_%H%M%S)
+echo $DATETIME
+HOST=localhost
+DB_USER=root
+DB_PWD=1328910
+DATABASE=javaweb-test
+
+#如果不存在目录，创建目录
+[ ! -d "${BACKUP}/${DATETIME}" ] && mkdir -p "${BACKUP}/${DATETIME}"
+
+#备份数据库
+mysqldump -u${DB_USER} -p${DB_PWD} --host=${HOST} -q -R --databases ${DATABASE} | gzip > ${BACKUP}/${DATETIME}/$DATETIME.sql.gz
+#将文件处理为 tar.gz
+cd ${BACKUP} 
+tar -zcvf $DATETIME.tar.gz ${DATETIME}
+#删除 备份的文件夹
+rm -rf ${BACKUP}/${DATETIME}
+#删除10天前的备份文件
+find ${BACKUP} -atime +10 -name "*.tar.gz" -exec rm {} \;
+echo "备份成功"
+```
+
+最后通过crontab进行定时执行sh
+
+```bash
+[root@lgdlgd123 sbin]# crontab --help
+crontab: invalid option -- '-'
+crontab: usage error: unrecognized option
+Usage:
+ crontab [options] file
+ crontab [options]
+ crontab -n [hostname]
+
+Options:
+ -u <user>  define user
+ -e         edit user's crontab
+ -l         list user's crontab
+ -r         delete user's crontab
+ -i         prompt before deleting
+ -n <host>  set host in cluster to run users' crontabs
+ -c         get host in cluster to run users' crontabs
+ -s         selinux context
+ -x <mask>  enable debugging
+
+Default operation is replace, per 1003.2
+[root@lgdlgd123 sbin]# crontab -l
+30 10 * * * /user/sbin/mysql_db_backup.sh
+```
 
 # VIM 加快开发
 
