@@ -160,6 +160,46 @@ Bean的定义信息是和实现分开的。
 
    <import resource = "beans2.xml"/>
 
+## BeanFactory 和 ApplicationContext 的区别？
+
+二者都是 Spring 框架的两大核心接口，都可以当做 Spring 的容器。其中 ApplicationContext 是 BeanFactory 的子接口。
+
+BeanFactory 是 Spring 里面最底层的接口，包含了各种 Bean 的定义，读取配置文档，管理 Bean 的加载、实例化，控制 Bean 的生命周期，维护对象之间的依赖关系等功能。
+
+ApplicationContext 接口作为 BeanFactory 的派生，除了提供 BeanFactory 所具有的功能外，还提供了更完整的框架功能：
+
+继承 MessageSource，支持国际化。
+统一的资源文件访问方式。
+提供在监听器中注册 Bean 的事件。
+支持同时加载多个配置文件。
+载入多个（有继承关系）上下文，使得每一个上下文都专注于一个特定的层次，如应用的 Web 层。
+具体区别体现在以下三个方面：
+
+**加载方式不同**
+BeanFactroy 采用的懒加载方式注入 Bean，即只有在使用到某个 Bean 时才对该 Bean 实例化。这样，我们就不能在程序启动时发现一些存在的 Spring 的配置问题。
+
+ApplicationContext 是在启动时一次性创建了所有的 Bean。
+
+**创建方式不同**
+BeanFactory 通常以编程的方式被创建，ApplicationContext 还能以声明的方式创建，如使用 ContextLoader。
+
+**注册方式不同**
+二者都支持 BeanPostProcessor、BeanFactoryPostProcessor 的使用，但 BeanFactory 需要手动注册，而 ApplicationContext 则是自动注册。
+
+有哪些注入方式以及区别？
+Spring 的依赖注入分为接口注入（Interface Injection）、Setter 方法注入（Setter Injection） 和构造器注入（Constructor Injection） 三种方式。其中接口注入由于在灵活性和易用性比较差，现在从 Spring4 开始已被废弃。
+
+构造器依赖注入：构造器依赖注入通过容器触发一个类的构造器来实现的，该类有一系列参数，每个参数代表一个对其他类的依赖。
+
+Setter方法注入：Setter 方法注入是容器通过调用无参构造器或无参 static 工厂方法实例化 Bean 之后，调用该 Bean 的 setter 方法实现。
+
+二者区别：
+
+构造函数注入不支持部分注入，而 Setter 方法注入支持。
+构造函数注入不会覆盖 setter 属性，而 Setter 方法会。
+构造函数注入任意修改都会创建一个新实例，而 Setter 方法不会。
+构造函数注入适用于设置大量属性，Setter 方法使用与设置少量属性。
+
 ## DI依赖注入 IOC的另一种
 
 1. #### 构造器注入
@@ -352,6 +392,31 @@ jdk1.5支持注解，Spring2.5支持注解
    - 都是用来自动装配的，可以指定id
    - @Autowired 通过byname(常用)
    - @Resource通过byname,如果byname找不到就通过byType，俩个都找不到，就报错(常用)
+
+## Spring Bean 的生命周期
+
+
+Bean 在 Spring 容器中从创建到销毁经历了若干阶段，每一阶段都可以进行个性化定制。
+
+1）Spring 对 Bean 进行实例化；
+
+2）Spring 将配置和 Bean 的引用注入到对应的属性中；
+
+3）如果 Bean 实现了 BeanNameAware 接口，Spring 将 Bean 的 ID 传递给 setBeanName() 方法；
+
+4）如果 Bean 实现了 BeanFactoryAware 接口，Spring 将调用 setBeanFactory() 方法将 BeanFactory 容器实例传入；
+
+5）如果 Bean 实现了 ApplicationContextAware 接口，Spring 将调用 setApplicationContext() 方法将 Bean 所在的应用上下文的引用传入进来；
+
+6）如果 Bean 实现了 BeanPostProcessor 接口，Spring 将调用它们的 postProcessBeforeInitialization() 方法；
+
+7）如果 Bean 实现了 InitializingBean 接口，Spring 将调用它们的 afterPropertiesSet() 方法。类似地，如果 Bean 使用 initmethod 声明了初始化方法，该方法也会被调用；
+
+8）如果 Bean 实现了 BeanPostProcessor 接口，Spring 将调用它们的postProcessAfterInitialization()方法；
+
+9）此时，Bean 已经准备就绪，可以被应用程序使用了，它们将一直驻留在应用上下文中，直到该应用上下文被销毁；
+
+10）如果 Bean 实现了 DisposableBean 接口，Spring 将调用它的 destroy() 接口方法。同样，如果使用 destroymethod 声明了销毁方法，该方法也会被调用。
 
 ## 1.7 使用注解开发
 
