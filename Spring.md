@@ -827,3 +827,57 @@ insert into user(id,name,pwd) values(#{id},#{name},#{pwd})
 </beans>
 ```
 
+## Spring 事务的开启方式？
+
+编程式事务：编码方式实现事务管理（PlatfromTransactionManager）
+
+声明式事务
+
+可知编程式事务每次实现都要单独实现，但业务量大功能复杂时，使用编程式事务无疑是痛苦的，而声明式事务不同，声明式事务属于无侵入式，不会影响业务逻辑的实现。
+
+ref
+
+## Spring 事务的隔离级别？
+
+Spring 事务隔离级别比数据库事务隔离级别多一个 Default。
+
+DEFAULT （默认）
+这是一个 PlatfromTransactionManager 默认的隔离级别，使用数据库默认的事务隔离级别。另外四个与 JDBC 的隔离级别相对应。
+
+READ_UNCOMMITTED （读未提交）
+
+READ_COMMITTED （读已提交）
+
+REPEATABLE_READ （可重复读）
+
+SERIALIZABLE（串行化）
+
+## Spring 事务的传播级别？
+
+默认 Required 级别。
+
+级别	描述
+REQUIRED	支持当前事务，如果没有事务会创建一个新的事务
+SUPPORTS	支持当前事务，如果没有事务的话以非事务方式执行
+MANDATORY	支持当前事务，如果没有事务抛出异常
+REQUIRES_NEW	创建一个新的事务并挂起当前事务
+NOT_SUPPORTED	以非事务方式执行，如果当前存在事务则将当前事务挂起
+NEVER	以非事务方式进行，如果存在事务则抛出异常
+NESTED	如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则进行与PROPAGATION_REQUIRED类似的操作
+NESTED 与 REQUIRES_NEW 的区别：
+
+二者非常类似，都像一个嵌套事务，如果不存在一个活动的事务，都会开启一个新的事务。但
+
+1）使用 REQUIRES_NEW 时，内层事务与外层事务就像两个独立的事务一样，一旦内层事务进行了提交后，外层事务不能对其进行回滚。两个事务互不影响。两个事务不是一个真正的嵌套事务。同时它需要 JTA 事务管理器的支持。
+
+2）使用 NESTED 时，外层事务的回滚可以引起内层事务的回滚。而内层事务的异常并不会导致外层事务的回滚，它是一个真正的嵌套事务。
+
+ref
+
+## Spring 事务失效的原因？
+
+异常类型不对：默认支持回滚的是 Runtime 异常，或异常被业务捕获
+数据源不支持事务：如 MySQL 未开启事务或使用 MyISAM 存储引擎
+非 Public 方法不支持事务
+传播类型不支持事务
+事务未被 Spring 接管
