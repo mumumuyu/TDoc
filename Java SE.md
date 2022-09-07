@@ -268,7 +268,7 @@ String 的不可变也让其具备线程安全，可以在多线程中使用
 如以下示例
 
 ```java
-String s1 = new String("love");
+String s 1 = new String("love");
 String s2 = new String("lover");
 System.out.println(s1 == s2);//false
 String s3 = s1.intern();

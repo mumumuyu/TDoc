@@ -748,3 +748,13 @@ public static TreeNode buildTree2(int[] preorder, int[] endorder) {
         2. 数据中心ID，相同的代码，相同的时间，但数据中心ID不同，就不会生成出相同的UUID。
 机器ID，相同的代码，相同的时间，相同数据中心，但机器ID不同，就不会生成出相同的UUID。
         3. 递增序列，如果处于同一毫秒内，递增序列则可以自增，保证ID的不唯一，自增ID最大12字节也就是2^12-1(4095)，也就是说，一台机器，可以在同1毫秒内生成4096个ID(为0时也算一个)，一秒就可以生成4,096,000‬个ID。
+
+### 实用小接口
+
+```java
+//集合排序(倒序)
+Collections.sort(ouList,(a,b)->b-a);
+//数组排序
+Arrays.sort(nums)
+```
+
