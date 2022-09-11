@@ -118,6 +118,48 @@ String.join(" ",strings);
 
    
 
+**是否相交**
+
+无脑一点用HashSet,遍历加入A链表节点，再遍历B是否有存在于其中的
+
+二.双指针
+
+由于链表的next只可能为一个结点，所以只要相交后，那必然后面全部一样
+
+所以假设有两个链表A,B总结点数分别为m,n
+
+A的不相交部分只可能是前面的部分a
+
+B的不相交部分只可能是前面的部分b
+
+C为相交部分的个数
+
+那么对于有相交部分的链表
+
+m = n 时候，那必然a = b,此时遍历a次得到
+
+m !=n 时候，则需要到第二轮，双方从对方节点遍历到节点，共a+c+b次得到
+
+对于没有相交的部分
+
+遍历m + n次得到 null
+
+```java
+//双指针
+    public ListNode getIntersectionNode2(ListNode headA, ListNode headB) {
+        if(headA == null || headB == null)
+            return null;
+        ListNode pA = headA,pB = headB;
+        while(pA!=pB){
+            pA = pA == null ? headB:pA.next;
+            pB = pB == null ? headA:pB.next;
+        }
+        return pA;
+    }
+```
+
+
+
 ##### 是否有环
 
 这个比较简单，只要做个快慢指针，一个一次两步零一个一次一步就可以了，只要没有撞到一起，就没有环
