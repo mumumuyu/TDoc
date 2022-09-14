@@ -1,5 +1,71 @@
 # MyBatis  
 
+## 实际使用
+
+一般，对于一个类 or 表的CRUD
+
+```XML
+<resultMap >
+	< column = "DB_column" property = "VOProperty"/>
+    ...
+</resultMap>
+
+<sql>
+	all column
+</sql>
+<select>
+	select 
+    <include refid = "xxx"/>
+    from cc
+    where id in 
+    <foreach item="item" index="index" collection="ids"
+                 open="(" separator="," close=")">
+            #{item}
+    </foreach>
+</select>
+
+//按条件查询
+<select>
+	select
+    <include refid = "xxx"/>
+    from cc
+    where is_delete = 0
+    <if test="id != null">
+     AND id = #{id,jdbcType = BIGINT}
+    </if>
+    ...一路if过去
+    order by xxx DESC
+</select>
+
+<insert>
+	insert into
+    <trim prefix="(" suffix=")" suffixOverrides=","
+          <if 不为空>
+    		xx,
+		  </if>
+		  ...
+	</trim>
+    <trim prefix="values(" suffix=")" suffixOverrides=","
+          <if 不为空>
+    		xx,
+		  </if>
+		  ...
+	</trim>      
+</insert>
+
+//批量操作也可以用ExecutorType.BATCH
+
+
+//删除也不是真删除，可以设置一个字段is_delete
+<update>
+	update xx
+    set is_delete='-1'
+    where id = #{id}
+</update>
+```
+
+
+
 1.Generator
 
 config.xml的配置文件

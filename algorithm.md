@@ -561,7 +561,9 @@ public static int maxSubArray(int[] nums){
 }
 ```
 
+找第K大值
 
+可以构造一个优先队列，PriorityQueue
 
 ### 字符串
 
@@ -683,6 +685,27 @@ public static int maxHeight(TreeNode root){
 
 思路是只要左边的最大值小于当前节点的数而右边最小的数值大于当前节点就可以
 
+**深度优先**
+
+起始就是先找到最底下的，再来
+
+```java
+public static void inOrder(TreeNode root,Set<Integer> set){
+    if (root == null)
+        return;
+    inOrder(root.left,set);
+    set.add(root.val);
+    inOrder(root.right,set);
+}
+```
+
+**广度优先**
+
+```java
+```
+
+
+
 #### 构造树
 
 ##### 前中序
@@ -765,6 +788,8 @@ public static TreeNode buildTree2(int[] preorder, int[] endorder) {
     }
 ```
 
+
+
 ### 雪花算法
 
 一般用于用户id的创建，唯一ID生成算法，且具备有序性和可扩展性。
@@ -790,6 +815,36 @@ public static TreeNode buildTree2(int[] preorder, int[] endorder) {
         2. 数据中心ID，相同的代码，相同的时间，但数据中心ID不同，就不会生成出相同的UUID。
 机器ID，相同的代码，相同的时间，相同数据中心，但机器ID不同，就不会生成出相同的UUID。
         3. 递增序列，如果处于同一毫秒内，递增序列则可以自增，保证ID的不唯一，自增ID最大12字节也就是2^12-1(4095)，也就是说，一台机器，可以在同1毫秒内生成4096个ID(为0时也算一个)，一秒就可以生成4,096,000‬个ID。
+
+### 存在两数和
+
+一般可以用hash表，比如
+
+```java
+//如果ints唯一
+public boolean find(ArrayList<Integer> ints,int sum){
+    HashSet<Integer> intMap = new HashSet<>();
+    for (Integer inta:ints){
+        if (intMap.contains(sum - inta))
+            return true;
+        intMap.add(inta);
+    }
+    return false;
+}
+```
+
+也可以通过双指针
+
+```java
+//有序数组
+public boolean find(int[] ints,int sum){
+    for (){
+        
+    }
+}
+```
+
+
 
 ### 实用小接口
 
