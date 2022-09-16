@@ -1249,3 +1249,7 @@ public OptimisticLockerInterceptor optimisticLockerInterceptor(){
 
 作为偷懒工具，就先看到这了
 
+# MBG(MyBatis generator)
+
+移步再参考https://www.cnblogs.com/ZhangZiSheng001/p/12820344.html
+

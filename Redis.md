@@ -1325,3 +1325,10 @@ RedLock 加锁步骤：
 3）如果大于等于半数节点（ N/2+1 ）加锁成功，并且使用的时间小于锁的有效期，即可认定加锁成功啦；
 
 4）如果获取锁失败，解锁！
+
+### LocalCache
+
+参考LinkedHashMap实现原理
+
+使用Wang/Jenkins hash算法，实现类似ConcurrentHashMap方式实现LocalCache	参考博文 https://blog.csdn.net/csdn9988680/article/details/81814531
+
