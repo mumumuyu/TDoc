@@ -2135,7 +2135,7 @@ Java 8 新提供给开发者的一组操作集合的 API，将要处理的元素
 
 2.terminal operation 终止操作：最终会从Stream中得到值。
 
-![image-20220602140738060](C:\Users\L\Desktop\文档\photo\image-20220602140738060.png)
+![image-20220602140738060](.\photo\image-20220602140738060.png)
 
 常用Stream流操作
 
