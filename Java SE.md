@@ -6,6 +6,36 @@ Redis的特殊数据结构：
 
 简单动态字符串，双端链表，字典，压缩列表，跳跃表，整数集合
 
+说说Stream流：
+
+java8提供的一种操作集合的抽象概念，流，处理元素序列
+
+总之就是：创建流=》一系列处理=》得到一个流=》终止操作/包装成集合
+
+创建方式：
+
+- list.stream()
+- Arrays.stream()
+- 无限流Stream.generator(()->(int)(Math.random()*10)).skip(3).limit(10).foreach(System.out::println);
+- 空流Stream
+
+中间处理
+
+- filter
+- distinct
+- map
+- group by ...
+
+终止操作
+
+- filter
+- max
+- min
+- count
+- foreach
+- 匹配，xxxmatch
+- collect(Collections.toList());
+
 
 
 #### 重写了equals()为什么还要重写hashCode()
@@ -2217,198 +2247,198 @@ public static Student student;
         students.add(new Student("lgd11","英文",130,3));
 ```
 
-- 分类(group by)
+##### 分类(group by)
 
-  ```java
-  Map<String,Map<String, List<Student>>> collect2 = students.stream().collect(Collectors.groupingBy(i -> i.getName()
-                  ,Collectors.groupingBy(i -> i.getCount() > 1 ? "首考" : "重修" )
-          ));
-  
-          for(String groupName:collect.keySet()){
-              System.out.println(groupName);
-              for(Integer count:collect2.get(groupName).keySet()) {
-                  System.out.println(count);
-                  collect2.get(groupName).get(count).forEach(student -> System.out.println(student));
-              }
-          }
-  ```
+```java
+Map<String,Map<String, List<Student>>> collect2 = students.stream().collect(Collectors.groupingBy(i -> i.getName()
+                ,Collectors.groupingBy(i -> i.getCount() > 1 ? "首考" : "重修" )
+        ));
 
-  效果如下
+        for(String groupName:collect.keySet()){
+            System.out.println(groupName);
+            for(Integer count:collect2.get(groupName).keySet()) {
+                System.out.println(count);
+                collect2.get(groupName).get(count).forEach(student -> System.out.println(student));
+            }
+        }
+```
 
-  ![image-20220602161722082](C:\Users\L\Desktop\文档\photo\image-20220602161722082.png)
+效果如下
 
-- 过滤(where xxx and xxx )and 可以用&& ，or 可以用||
+![image-20220602161722082](C:\Users\L\Desktop\文档\photo\image-20220602161722082.png)
 
-  ```java
-  //全部name转大写
-  long count = students.stream().map(student -> {
-              student.setName(student.getName().toUpperCase());
-              return null;
-          }
-  ).count();
-  ```
-  
-  ![image-20220609102109683](C:\Users\L\Desktop\文档\photo\image-20220609102109683.png)
-  
-  筛选lgd1的分数大于100的数据
-  
-- list转map与map转list
+过滤(where xxx and xxx )and 可以用&& ，or 可以用||
 
-  ```java
-  //List转map, (k1,k2)->k2 避免键重复 k1-取第一个数据；k2-取最后一条数据
-          Map<String, String> deviceMap = students.stream().collect(Collectors.toMap(i -> i.getName(), j -> j.getSubject(), (k1, k2) -> k1));
-  
-          System.out.println(deviceMap.get("lgd1"));
-  
-          //在.map里面构造数据 return什么数据就转成什么类型的list
-          List<Student> collectStu = deviceMap.entrySet().stream().map(item -> {
-              Student student = new Student();
-              student.setName(item.getKey());
-              student.setSubject(item.getValue());
-              return student;
-          }).collect(Collectors.toList());
-  
-          for (Student student:collectStu) {
-              System.out.println(student);
-          }
-  ```
+```java
+//全部name转大写
+long count = students.stream().map(student -> {
+            student.setName(student.getName().toUpperCase());
+            return null;
+        }
+).count();
+```
 
-- 求和与极值
+![image-20220609102109683](C:\Users\L\Desktop\文档\photo\image-20220609102109683.png)
 
-  ```java
-  //在egyList里面求cols的和
-  public static BigDecimal getSumBig(List<Map<String,Object>> egyList, String cols){
-          BigDecimal consuBig = egyList.stream()
-                  .filter((Map m)->StringUtils.isNotEmpty(m.get(cols)+"") && !"null".equals(String.valueOf(m.get(cols)))
-                          && !"-".equals(String.valueOf(m.get(cols))))
-                  .map((Map m)->new BigDecimal(m.get(cols)+""))
-                  .reduce(BigDecimal.ZERO,BigDecimal::add);
-          return consuBig;
-  }
-  
-  //求和与获取极值
-  Integer sum = students.stream().mapToInt(Student::getScore).sum();
-  OptionalInt optionalMax = students.stream().mapToInt(Student::getScore).max();
-  System.out.println(optionalMax.getAsInt());
-  System.out.println(sum);
-  ```
+筛选lgd1的分数大于100的数据
 
-- 获取最大值或者最小值的对象
+##### list转map与map转list
 
-  ```java
-  //找到有最大分数的对象
-  Optional<Student> optional = students.stream().max(Comparator.comparing(Student::getScore));
-          if (optional.isPresent()) { // 判断是否有值
-              Student student = optional.get();
-          }
-          System.out.println(optional.orElse(new Student()));
-  ```
+```java
+//List转map, (k1,k2)->k2 避免键重复 k1-取第一个数据；k2-取最后一条数据
+        Map<String, String> deviceMap = students.stream().collect(Collectors.toMap(i -> i.getName(), j -> j.getSubject(), (k1, k2) -> k1));
 
-  ![image-20220610145917263](C:\Users\L\Desktop\文档\photo\image-20220610145917263.png)
+        System.out.println(deviceMap.get("lgd1"));
 
-- 去重
+        //在.map里面构造数据 return什么数据就转成什么类型的list
+        List<Student> collectStu = deviceMap.entrySet().stream().map(item -> {
+            Student student = new Student();
+            student.setName(item.getKey());
+            student.setSubject(item.getValue());
+            return student;
+        }).collect(Collectors.toList());
 
-  ```java
-  List<String> strings = new ArrayList<>();
-          strings.add("a");
-          strings.add("b");
-          strings.add("b");
-          //去重
-          //去重之后进行拼接:
-          String s = strings.stream().distinct().collect(Collectors.joining(","));
-          System.out.println(s);
-  
-          List<String> sIdList = strings.stream().distinct().collect(Collectors.toList());
-  
-          for (String s1:sIdList){
-              System.out.println(s1);
-          }
-  		
-  //去重，按照字段
-  ArrayList<HashMap<String, Object>> disMaps = maps.stream().collect(Collectors.collectingAndThen(
-                  Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> (BigDecimal) o.get("ID")))), ArrayList::new));
-  //多个字段
-  ArrayList<HashMap<String, Object>> disMaps = maps.stream().collect(Collectors.collectingAndThen(
-                  Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> (BigDecimal) o.get("ID") ";" (String) o.get("NAME")))), ArrayList::new));
-  ```
+        for (Student student:collectStu) {
+            System.out.println(student);
+        }
+```
 
-  ![image-20220610150726458](C:\Users\L\Desktop\文档\photo\image-20220610150726458.png)
+##### 求和与极值
 
-- 排序
+```java
+//在egyList里面求cols的和
+public static BigDecimal getSumBig(List<Map<String,Object>> egyList, String cols){
+        BigDecimal consuBig = egyList.stream()
+                .filter((Map m)->StringUtils.isNotEmpty(m.get(cols)+"") && !"null".equals(String.valueOf(m.get(cols)))
+                        && !"-".equals(String.valueOf(m.get(cols))))
+                .map((Map m)->new BigDecimal(m.get(cols)+""))
+                .reduce(BigDecimal.ZERO,BigDecimal::add);
+        return consuBig;
+}
 
-  ```java
-  //Integer
-  Collections.sort(students, Comparator.comparing(Student::getCount));
-  
-  //String
-  Collections.sort(students, (p1, p2) -> {
-              return Integer.parseInt(String.valueOf(p1.getName().compareTo(p2.getName() + "")));
-          });
-  ```
+//求和与获取极值
+Integer sum = students.stream().mapToInt(Student::getScore).sum();
+OptionalInt optionalMax = students.stream().mapToInt(Student::getScore).max();
+System.out.println(optionalMax.getAsInt());
+System.out.println(sum);
+```
 
-  ![image-20220610152528365](/image-20220610152528365.png)
+##### 获取最大值或者最小值的对象
 
-- 拼接
+```java
+//找到有最大分数的对象
+Optional<Student> optional = students.stream().max(Comparator.comparing(Student::getScore));
+        if (optional.isPresent()) { // 判断是否有值
+            Student student = optional.get();
+        }
+        System.out.println(optional.orElse(new Student()));
+```
 
-  ```java
-  //将某个字段,按照某个字符串拼接:  List<Map<String, Object>> deviceMapList 
-  String sns = deviceMapList.stream()
-       	.map((m)->m.get("sn")+"").collect(Collectors.joining(","));
-  
-  List<String> strs = Arrays.asList("a","b","cd");
-   
-          //连接所有内容
-          String str = strs.stream().collect(Collectors.joining());
-          System.out.println(str);
-          //输出：abcd
-   
-          //连接所有内容,中间加一个逗号隔开
-          String str1 = strs.stream().collect(Collectors.joining(","));
-          System.out.println(str1);
-          //输出：a,b,cd
-   
-          //连接所有内容,中间加一个逗号隔开，两边加上括号
-          String str2 = strs.stream().collect(Collectors.joining(",","(",")"));
-          System.out.println(str2);
-          //输出：(a,b,cd)
-  ```
+![image-20220610145917263](C:\Users\L\Desktop\文档\photo\image-20220610145917263.png)
 
-- 统计
+##### 去重
 
-  ```java
-  //统计：和、数量、最大值、最小值、平均值: List<Employee> list
-          IntSummaryStatistics sumStatus = students.stream().collect(Collectors.summarizingInt(Student::getScore));
-          System.out.println("和：" + sumStatus.getSum());
-          System.out.println("数量：" + sumStatus.getCount());
-          System.out.println("最大值：" + sumStatus.getMax());
-          System.out.println("最小值：" + sumStatus.getMin());
-          System.out.println("平均值：" + sumStatus.getAverage());
-  
-  OptionalDouble average = students.stream().mapToInt(Student::getScore).average();
-          System.out.println(average.getAsDouble());
-  ```
+```java
+List<String> strings = new ArrayList<>();
+        strings.add("a");
+        strings.add("b");
+        strings.add("b");
+        //去重
+        //去重之后进行拼接:
+        String s = strings.stream().distinct().collect(Collectors.joining(","));
+        System.out.println(s);
 
-- 某个字段为对应值的个数
+        List<String> sIdList = strings.stream().distinct().collect(Collectors.toList());
 
-  ```java
-  //List<Employee> list
-  Map<Integer, Long> collect3 = students.stream().collect(Collectors.groupingBy(i -> i.getScore(),Collectors.counting()));
-  for(Integer integer: collect3.keySet()){
-      System.out.println(integer + " " + collect3.get(integer));
-  }
-  ```
+        for (String s1:sIdList){
+            System.out.println(s1);
+        }
+		
+//去重，按照字段
+ArrayList<HashMap<String, Object>> disMaps = maps.stream().collect(Collectors.collectingAndThen(
+                Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> (BigDecimal) o.get("ID")))), ArrayList::new));
+//多个字段
+ArrayList<HashMap<String, Object>> disMaps = maps.stream().collect(Collectors.collectingAndThen(
+                Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> (BigDecimal) o.get("ID") ";" (String) o.get("NAME")))), ArrayList::new));
+```
 
-  ![image-20220610155622707](./image-20220610155622707.png)
+![image-20220610150726458](C:\Users\L\Desktop\文档\photo\image-20220610150726458.png)
 
-  比如这里，分数为130的有两个
+##### 排序
 
-- 分区
+```java
+//Integer
+Collections.sort(students, Comparator.comparing(Student::getCount));
 
-- 反转，再变Int[]
+//String
+Collections.sort(students, (p1, p2) -> {
+            return Integer.parseInt(String.valueOf(p1.getName().compareTo(p2.getName() + "")));
+        });
+```
 
-  ```java
-  list.stream().sorted((pre, next) -> -1).mapToInt(Integer::intValue).toArray();
-  ```
+![image-20220610152528365](/image-20220610152528365.png)
+
+##### 拼接
+
+```java
+//将某个字段,按照某个字符串拼接:  List<Map<String, Object>> deviceMapList 
+String sns = deviceMapList.stream()
+     	.map((m)->m.get("sn")+"").collect(Collectors.joining(","));
+
+List<String> strs = Arrays.asList("a","b","cd");
+ 
+        //连接所有内容
+        String str = strs.stream().collect(Collectors.joining());
+        System.out.println(str);
+        //输出：abcd
+ 
+        //连接所有内容,中间加一个逗号隔开
+        String str1 = strs.stream().collect(Collectors.joining(","));
+        System.out.println(str1);
+        //输出：a,b,cd
+ 
+        //连接所有内容,中间加一个逗号隔开，两边加上括号
+        String str2 = strs.stream().collect(Collectors.joining(",","(",")"));
+        System.out.println(str2);
+        //输出：(a,b,cd)
+```
+
+##### 统计
+
+```java
+//统计：和、数量、最大值、最小值、平均值: List<Employee> list
+        IntSummaryStatistics sumStatus = students.stream().collect(Collectors.summarizingInt(Student::getScore));
+        System.out.println("和：" + sumStatus.getSum());
+        System.out.println("数量：" + sumStatus.getCount());
+        System.out.println("最大值：" + sumStatus.getMax());
+        System.out.println("最小值：" + sumStatus.getMin());
+        System.out.println("平均值：" + sumStatus.getAverage());
+
+OptionalDouble average = students.stream().mapToInt(Student::getScore).average();
+        System.out.println(average.getAsDouble());
+```
+
+某个字段为对应值的个数
+
+```java
+//List<Employee> list
+Map<Integer, Long> collect3 = students.stream().collect(Collectors.groupingBy(i -> i.getScore(),Collectors.counting()));
+for(Integer integer: collect3.keySet()){
+    System.out.println(integer + " " + collect3.get(integer));
+}
+```
+
+![image-20220610155622707](./image-20220610155622707.png)
+
+比如这里，分数为130的有两个
+
+分区
+
+反转，再变Int[]
+
+```java
+list.stream().sorted((pre, next) -> -1).mapToInt(Integer::intValue).toArray();
+```
 
 ## java 锁
 
