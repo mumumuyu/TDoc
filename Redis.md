@@ -116,7 +116,7 @@ KV键值对
 
 - 放的是关系
 
-![image-20220405154611414](C:\Users\L\Desktop\文档\photo\image-20220405154611414.png)
+![image-20220405154611414](.\photo\image-20220405154611414.png)
 
 NoSql有以下四大类型:
 
@@ -147,7 +147,7 @@ NoSql有以下四大类型:
 
 ### win&linux
 
-![image-20220405160111273](C:\Users\L\Desktop\文档\photo\image-20220405160111273.png)
+![image-20220405160111273](.\photo\image-20220405160111273.png)
 
 ```
 //简单玩玩
@@ -302,7 +302,7 @@ String类似的使用场景:value除了字符串还可以是数字
 - 粉丝数
 - 对象缓存存储
 
-![image-20220512130543675](C:\Users\L\Desktop\文档\photo\image-20220512130543675.png)
+![image-20220512130543675](.\photo\image-20220512130543675.png)
 
 ##### String 类型的底层实现
 
@@ -557,7 +557,7 @@ OK
 
 #### **List**
 
-![image-20220512130601244](C:\Users\L\Desktop\文档\photo\image-20220512130601244.png)
+![image-20220512130601244](.\photo\image-20220512130601244.png)
 
 - 它实际上是一个链表，before Node after , left ,right都可以插入值
 - 如果key不存在就创建一个新的链表，存在就增加内容
@@ -699,11 +699,11 @@ OK
 6) "element1"
 ```
 
-![image-20220407084219753](C:\Users\L\Desktop\文档\photo\image-20220407084219753.png)
+![image-20220407084219753](.\photo\image-20220407084219753.png)
 
 #### **Set**
 
-![image-20220512130618997](C:\Users\L\Desktop\文档\photo\image-20220512130618997.png)
+![image-20220512130618997](.\photo\image-20220512130618997.png)
 
 set中的值不可以重复，比如java里可以用equals进行比较
 
@@ -777,7 +777,7 @@ Redis的Set是string类型的无序集合。集合成员是唯一的
 
 #### **Hash**
 
-![image-20220512130654644](C:\Users\L\Desktop\文档\photo\image-20220512130654644.png)
+![image-20220512130654644](.\photo\image-20220512130654644.png)
 
 value: 又是一个K-V
 
@@ -812,7 +812,7 @@ Map<Object, Object> entries = redisTemplate.opsForHash().entries("k1");
 
 跳表为了避免每次插入或删除带来的额外操作，不要求上下相邻两层链表之间的节点个数有严格的对应关系，而是为每个节点随机出一个层数（level）。而且新插入一个节点不会影响其它节点的层数。因此，插入操作只需要修改插入节点前后的指针，而不需要对很多节点都进行调整。
 
-![image-20220512130715976](C:\Users\L\Desktop\文档\photo\image-20220512130715976.png)
+![image-20220512130715976](.\photo\image-20220512130715976.png)
 
 > 不同的是每个元素都会关联一个double类型的分数（score）。redis正是通过分数来为集合中的成员进行从小到大的排序。
 >
@@ -851,6 +851,28 @@ Map<Object, Object> entries = redisTemplate.opsForHash().entries("k1");
 3) "lgda"
 
 ```
+
+### Redis如何实现key过期
+
+**惰性过期 + 随机读取 key触碰过期**
+
+每秒10次 * 随机20个key + 超过25%过期时再次触发
+
+惰性过期：也就是key过期的时候不会马上删除他，仅当客户端尝试查询KEY的时候，他才会被动失效，删除
+
+不过这会导致一些key一直不会被查询，但需要被删除
+
+所以Redis设置了每秒执行十次的频率
+
+1. 从有过期时间的Key中随机测试20个key
+2. 删除其中已过期的key
+3. 如果有超过百分之二十五的key过期，那就再回到步骤1
+
+Redis会继续尝试，直到过期的KEY频率低于25%
+
+也说明一般查询碰到的过期key只会占到最大写操作数量的25%
+
+好处嘛：不会一下子一堆过期，可以消峰
 
 ### 五大基本类型实现底层：
 
@@ -917,7 +939,7 @@ intset（整数集合）和 ziplist（压缩列表）主要是为节省内存而
 
 > 使用经纬度定位地理坐标并用zset保存
 
-![image-20220512131335750](C:\Users\L\Desktop\文档\photo\image-20220512131335750.png)
+![image-20220512131335750](.\photo\image-20220512131335750.png)
 
 **有效经纬度**
 
@@ -951,7 +973,7 @@ intset（整数集合）和 ziplist（压缩列表）主要是为节省内存而
 
 应用：一个用户多次访问也只算一个
 
-![image-20220512132525731](C:\Users\L\Desktop\文档\photo\image-20220512132525731.png)
+![image-20220512132525731](.\photo\image-20220512132525731.png)
 
 #### **bitmaps**位图
 
@@ -959,7 +981,7 @@ intset（整数集合）和 ziplist（压缩列表）主要是为节省内存而
 
 应用：签到统计，状态统计这种数值类型为boolean的
 
-![image-20220512132516064](C:\Users\L\Desktop\文档\photo\image-20220512132516064.png)
+![image-20220512132516064](.\photo\image-20220512132516064.png)
 
 bitmaps的底层是一串从左到右的二进制串
 
@@ -1053,6 +1075,8 @@ boot2.x后,原来的Jedis被lettuce替换
 
 ### 关于pipeline的使用
 
+不支持事务噢，需要做事务剔除的时候可以考虑HBase或者map的scan
+
 1.什么是 Redis 的 Pipeline？
 在出现 Pipeline 之前，我们梳理一下 Redis 客户端执行一条命令需要经过哪些步骤：发送命令－〉命令排队－〉命令执行－〉返回结果。
 
@@ -1127,7 +1151,7 @@ StopWatch stopWatch = new StopWatch();
 
 效果
 
-![image-20220506161553380](C:\Users\L\Desktop\文档\photo\image-20220506161553380.png)
+![image-20220506161553380](.\photo\image-20220506161553380.png)
 
 一些用法
 
@@ -1293,17 +1317,17 @@ repl_backlog_histlen:0
 
 ruby集群
 
-![image-20220510211045929](C:\Users\L\Desktop\文档\photo\image-20220510211045929.png)
+![image-20220510211045929](.\photo\image-20220510211045929.png)
 
 主
 
-![image-20220510211031246](C:\Users\L\Desktop\文档\photo\image-20220510211031246.png)
+![image-20220510211031246](.\photo\image-20220510211031246.png)
 
 从
 
-![image-20220510211012917](C:\Users\L\Desktop\文档\photo\image-20220510211012917.png)
+![image-20220510211012917](.\photo\image-20220510211012917.png)
 
-### 实现分布式锁
+### 实现分布式锁及高并发优化
 
 「互斥性」: 任意时刻，只有一个客户端能持有锁
 「锁超时释放」：持有锁超时，可以释放，防止不必要的资源浪费，也可以防止死锁
@@ -1325,6 +1349,16 @@ RedLock 加锁步骤：
 3）如果大于等于半数节点（ N/2+1 ）加锁成功，并且使用的时间小于锁的有效期，即可认定加锁成功啦；
 
 4）如果获取锁失败，解锁！
+
+接下去肯定就是分布式锁在**高并发场景**的优化了(思路就是缩小锁粒度，竞争升级锁，CAS+队列)
+
+可以参考ConcurrentHashMap(1.7)
+
+使用分段锁，把商品分成很多段，key1,key2,key3
+
+请求来后，随机把某段key加锁，并发量大之后就可以同时操作很多段锁内容
+
+(如果key有顺序性，需要即使释放并给下一个分段锁)
 
 ### LocalCache
 
