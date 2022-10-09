@@ -1,5 +1,236 @@
 # Redis
 
+### 使用Redis的一些常见方式
+
+1. 进行缓存(最常见简单方式)
+
+   序列化简单参考
+
+   ```java
+   	@Bean(name = "cacheRedisConnectionFactory")
+       @Primary
+       public RedisConnectionFactory redisConnectionFactory() {
+           System.out.println("==============================REDIS============================");
+           System.out.println("REDIS HOST : " + host + " REDIS PORT : " + port);
+           JedisConnectionFactory factory = new JedisConnectionFactory();
+           factory.setHostName(host);
+           factory.setPort(port);
+           factory.setDatabase(database);
+           if(!StringUtils.isBlank(password)){
+               factory.setPassword(password);
+           }
+           return factory;
+       }
+   
+   @Bean(name = "redisTemplate")
+   public RedisTemplate<String, Object> redisTemplate(@Qualifier("cacheRedisConnectionFactory") RedisConnectionFactory redisConnectionFactory) {
+       //使用Jackson2JsonRedisSerializer来序列化和反序列化redis的value值（默认使用JDK的序列化方式）
+       Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+       ObjectMapper om = new ObjectMapper();
+       //指定要序列化的域，field,get和set,以及修饰符范围，ANY是都有包括private和public
+       om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+       om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+       jackson2JsonRedisSerializer.setObjectMapper(om);
+       //配置redisTemplate
+       RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+       // 配置连接工厂
+       redisTemplate.setConnectionFactory(redisConnectionFactory);
+       RedisSerializer stringSerializer = new StringRedisSerializer();
+       redisTemplate.setKeySerializer(stringSerializer);//key序列化
+       redisTemplate.setValueSerializer(jackson2JsonRedisSerializer);//value序列化
+       redisTemplate.setHashKeySerializer(stringSerializer);//Hash key序列化
+       redisTemplate.setHashValueSerializer(jackson2JsonRedisSerializer);//Hash value序列化
+       redisTemplate.afterPropertiesSet();
+       return redisTemplate;
+   }
+   ```
+
+   使用常量static final 的字符前缀，利用String.format(xxx)形式进行组合(可以利用前缀+id,也可以利用前缀+各个属性)，确保数据一致性，设置expire过期和时间（setAndExprie保证原子性）
+
+   ```java
+   private static final String GET_ICON_CONFIG_LIST_KEY = "getIconConfigListByApp:city%sappSource%s";
+   	/**
+        * 缓存时长30min（提高redis热数据有效率）
+        */
+       private static final Long TEST_CACHE_TIME = 30L;
+   ```
+
+   通过id获取详细信息时可以走缓存，有则直接出，无则取
+
+   ```java
+   //添加后端缓存
+   String cacheKey = TEST_CACHE_MANAGE + id;
+   Object loseinfo = redisTemplate.opsForValue().get(cacheKey);
+   //查询缓存信息
+   if(ObjectUtils.isEmpty(loseinfo)){
+       TestInfo TestInfo = iAppTestMapper.getTestDetailInfo(id);
+       if (TestInfo == null)
+           return ResponseObject.newFailure(ReturnCode.INVALID_PARAMS);
+       //写入缓存：
+       redisTemplate.opsForValue().set(cacheKey, TestInfo, TEST_CACHE_TIME, TimeUnit.MINUTES);
+       return ResponseObject.newSuccess(TestInfo);
+   }
+   TestInfo TestInfo = (TestInfo)loseinfo;
+   ```
+
+   每当进行更改数据操作如delete或者update时，删除改key缓存
+
+   ```java
+   redisTemplate.delete(TEST_CACHE_MANAGE + TestInfo.getId());
+   ```
+
+   另一端给C端服务接口如果需要，直接利用以下把Json转为对象
+
+   ```java
+   JsonUtil.deserialize(value,AppTestInfo.class);
+   ```
+
+2. 也是缓存，不过利用阻塞队列,每10s清空一次功能相关的缓存
+
+   前置准备变量
+
+   ```java
+   	//默认分布式锁过期时间
+   	private static final long DEFAULT_LOCK_EXPIRE_TIME = 60000;
+       //请求超时时间
+   	private static final long REQUEST_TIMEOUT = 1000;
+   	//每十秒清除一次所有缓存
+   	private static final ExecutorService threadPool = Executors.newSingleThreadExecutor();
+       //阻塞队列
+   	private static final BlockingQueue<XXXX> CLEAR_QUEUE = new LinkedBlockingQueue<>();
+       //key前缀
+   	private static final String GET_ICON_CONFIG_LIST_KEY = "getIconConfigListByApp:city%sappSource%s";
+   ```
+
+   @PostConstruct是Java自带的注解，在方法上加该注解会在项目启动的时候执行该方法，也可以理解为在spring容器初始化的时候执行该方法。每十秒钟执行一次，清空一次缓存
+
+   ```java
+   @PostConstruct
+       private void createThread() {
+           threadPool.execute(() -> {
+               while (true) {
+                   try {
+                       XXXX xxxx = CLEAR_QUEUE.take();
+                       Thread.sleep(1000 * 10);
+                       List<City> cities = cityMapper.findAll();
+                       List<AppSource> appSources = appSourceMapper.findAll();
+                       if (null != cities && null != appSources) {
+                           for (City city : cities) {
+                               for (AppSource appSource : appSources) {
+                                   redisTemplate.delete(String.format(GET_XXX_LIST_KEY, city.getCode(), appSource.getKey()));
+                               }
+                           }
+                       }
+                   } catch (InterruptedException e) {
+                   }
+               }
+           });
+       }
+   ```
+
+   存的话嘛，老样子，还是先看有没有缓存，有的用，没有就自己去取然后setAndExprie()
+
+3. 分布式锁
+
+   封装类参考
+
+   ```java
+        /**
+        * 默认锁有效时间(单位毫秒)
+        */
+       private static final long DEFAULT_LOCK_EXPIRE_TIME = 60000;
+       /**
+        * 默认睡眠时间(单位毫秒)
+        */
+       private static final long DEFAULT_SLEEP_TIME = 100;
+   
+       private static final long REQUEST_TIMEOUT = 5;
+       /**
+        * 当前锁的redis服务器名称
+        */
+       private String redisName;
+   
+       @Autowired
+       @Qualifier("cacheRedisTemplate")
+       private RedisTemplate<String, String> redisTemplate;
+   
+       public boolean tryLock(String lock)   {
+           return this.tryLock(lock, DEFAULT_LOCK_EXPIRE_TIME, REQUEST_TIMEOUT);
+       }
+   
+       public boolean tryLock(String lock, long lockExpireTime, long requestTimeout) {
+           Preconditions.checkArgument(StringUtils.isNotBlank(lock), "lock invalid");
+           Preconditions.checkArgument(lockExpireTime > 0, "lockExpireTime invalid");
+           Preconditions.checkArgument(requestTimeout > 0, "requestTimeout invalid");
+           try {
+               while (requestTimeout > 0) {
+                   String expire = String.valueOf(System.currentTimeMillis() + lockExpireTime + 1);
+                   Boolean result = redisTemplate.opsForValue().setIfAbsent(lock, expire);
+                   if (result) {
+                       //目前没有线程占用此锁
+                       return true;
+                   }
+                   Object currentValue = redisTemplate.opsForValue().get(lock);
+                   if (currentValue == null) {
+                       //锁已经被其他线程删除马上重试获取锁
+                       continue;
+                   } else if (Long.parseLong(String.valueOf(currentValue)) < System.currentTimeMillis()) {
+                       //此处判断出锁已经超过了其有效的存活时间
+                       Object oldValue = redisTemplate.opsForValue().getAndSet(lock, expire);
+                       if (oldValue == null || oldValue.equals(currentValue)) {
+                           //1.如果拿到的旧值是空则说明在此线程做getSet之前已经有线程将锁删除，由于此线程getSet操作之后已经对锁设置了值，实际上相当于它已经占有了锁
+                           //2.如果拿到的旧值不为空且等于前面查到的值，则说明在此线程进行getSet操作之前没有其他线程对锁设置了值,则此线程是第一个占有锁的
+                           return true;
+                       }
+                   }
+                   long sleepTime = 0;
+                   if (requestTimeout > DEFAULT_SLEEP_TIME) {
+                       sleepTime = DEFAULT_SLEEP_TIME;
+                       requestTimeout -= DEFAULT_SLEEP_TIME;
+                   } else {
+                       sleepTime = requestTimeout;
+                       requestTimeout = 0;
+                   }
+                   try {
+                       TimeUnit.MILLISECONDS.sleep(sleepTime);
+                   } catch (InterruptedException e) {
+   
+                   }
+               }
+               return false;
+           } finally {
+   
+           }
+       }
+   
+       public void unlock(String lock) {
+           String value = redisTemplate.opsForValue().get(lock);
+           if (value != null && Long.parseLong(value) > System.currentTimeMillis()) {
+               //如果锁还存在并且还在有效时间则进行删除
+               redisTemplate.delete(lock);
+           }
+       }
+   ```
+
+   使用范例
+
+   ```java
+   		String lockKey = "xxxLockKey";
+           try{
+               boolean lockBusEquity = redisDistributeLock.tryLock(lockKey, DEFAULT_LOCK_EXPIRE_TIME, REQUEST_TIMEOUT);
+               if (!lockBusEquity) {
+                   logger.info("xxx get lock fail.");
+               }
+               //业务代码
+           }catch (Exception e) {
+               logger.error("xxx error:{}", e);
+           }finally {
+               redisDistributeLock.unlock(lockKey);
+           }
+   ```
+
+   
+
 早些年的单机版Mysql不够用了
 
 读写量太大，发展了一系列发现
@@ -903,6 +1134,8 @@ Redis会继续尝试，直到过期的KEY频率低于25%
   删除或更新失败都不会导致不一致
 
 总之就是要给缓存Key设置过期时间，一般30mins（不过会造成删除缓存失败后，需要过一会儿才会到最新数据）
+
+保证set 与 exprie设置的原子性？直接setAndExprie👍
 
 解决办法：
 
