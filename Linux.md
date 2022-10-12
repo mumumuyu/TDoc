@@ -879,7 +879,7 @@ J2EE,写一些SHELL脚本或程序对服务器进行维护(比如定时备份数
 
 Shell:命令行解释器，提供一个向Linux内核发送请求，以便运行程序的界面系统及程序
 
-![image-20220825114131275](C:\Users\L\Desktop\文档\photo\image-20220825114131275.png)
+![image-20220825114131275](.\photo\image-20220825114131275.png)
 
 mk dir/opt/t(xxx.sh) => Shell(命令行解释) - >Linux内核
 
@@ -1076,7 +1076,7 @@ position.sh #$0
 
 #### 条件判断
 
-![image-20220825164200730](C:\Users\L\Desktop\文档\photo\image-20220825164200730.png)
+![image-20220825164200730](.\photo\image-20220825164200730.png)
 
 ```bash
 [root@lgdlgd123 shcode]# sh TiaoJian.sh
@@ -1351,7 +1351,7 @@ Linux内置vi文本编辑器
 
   相关指令，读取，存盘，替换，显示行号
 
-![image-20220826111708459](C:\Users\L\Desktop\文档\photo\image-20220826111708459.png)
+![image-20220826111708459](.\photo\image-20220826111708459.png)
 
 - 输入vim xxx.xxx进入编辑的一般模式
 
@@ -1365,7 +1365,7 @@ Linux内置vi文本编辑器
 
   ​		:q!（强制退出保存）
 
-![image-20220826111323992](C:\Users\L\Desktop\文档\photo\image-20220826111323992.png)
+![image-20220826111323992](.\photo\image-20220826111323992.png)
 
 | 快捷键    | 功能                                                         |
 | --------- | ------------------------------------------------------------ |
@@ -1375,4 +1375,4 @@ Linux内置vi文本编辑器
 
 数字 +shift + g快速定位到某行
 
-![image-20220826144920078](C:\Users\L\Desktop\文档\photo\image-20220826144920078.png)
+![image-20220826144920078](.\photo\image-20220826144920078.png)

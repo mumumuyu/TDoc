@@ -48,8 +48,6 @@ systemctl start docker
 docker version
 
 docker run hello-world
-
-
 ```
 
 卸载docker
@@ -87,4 +85,42 @@ sudo systemctl restart docker
 4. 构建镜像
 5. 发布运行
 
-鸡肋,心急吃不了热豆腐
+鸡肋,心急吃不了热豆腐 (hhh，跑起来咯，CI/CD需要一定的配置，个人成本有限，将就docker咯)
+
+😅，本来想跳过Docker直接CI/CD的，没想到jenkins直接要三个节点，一个服务器16G内存(GitLab直接6G)其，另一个也不小，寄，继续看Docker了
+
+```sh
+docker run -d --hostname my-rabbit --name myrabbit -e RABBITMQ_DEFAULT_USER=root -e RABBITMQ_DEFAULT_PASS=admin -p 15672:15672 -p 5672:5672 rabbitmq:management
+```
+
+- Dockerfile
+
+```bash
+FROM java:8
+EXPOSE 8081
+
+VOLUME /home/docker
+
+ENV TZ=Asia/Shanghai
+RUN ln -sf /usr/share/zoneinfo/{TZ} /etc/localtime && echo "{TZ}" > /etc/timezone
+
+ADD Myboke.jar  /app.jar
+RUN bash -c 'touch /app.jar'
+ENTRYPOINT ["java","-jar","/app.jar"]
+```
+
+- FROM java:8 表示基于jdk8环境
+- EXPOSE 8080  表示对外暴露的端口是8081
+- - VOLUME /tmp 表示挂载到/tmp目录
+- ADD eblog-0.0.1-SNAPSHOT.jar /app.jar 表示把jar包复制到镜像服务里面的根目录，并改名称app.jar
+- RUN bash -c 'touch /app.jar' 表示执行创建app.jar
+- ENTRYPOINT ["java","-jar","/app.jar"] 表示执行启动命令java -jar
+
+```bash
+docker build -t mybokev1.0 .
+docker run -p 8081:8081 --name mybokev1.0 -d mybokev1.0
+```
+
+成功~，mysql redis也可以用镜像，要用的话application.yml配置里记得把所有软件ip更改为镜像内网ip，经济实力雄厚的可以用云服务器👍云mysql 30/年
+
+含mysql,redis,es等等中间件的springboot一键部署https://juejin.cn/post/6844904142620622862
