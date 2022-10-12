@@ -4,6 +4,8 @@
 
 按ctrl+q可以解除锁定
 
+查看内存占用前10 ：ps aux | head -1;ps aux |grep -v PID |sort -rn -k +4 | head -10
+
 #### Linux如何运行和停止jar包
 
 nohup java -jar Myboke.jar &

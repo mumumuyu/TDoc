@@ -221,3 +221,17 @@ Watcher特性总结
 3、调用process方法来触发Watcher
 
 这里process主要就是通过ServerCnxn对应的TCP连接发送Watcher事件通知
+
+#### 会话管理
+
+分桶策略：将类似的会话放在同一区块中进行管理，以便于 Zookeeper 对会话进行不同区块的隔离处理以及同一区块的统一处理。
+
+分配原则：每个会话的“下次超时时间点”（ExpirationTime）
+
+计算公式：
+
+ExpirationTime_ = currentTime + sessionTimeout ExpirationTime =
+(ExpirationTime_ / ExpirationInrerval + 1) * ExpirationInterval ,
+ExpirationInterval 是指 Zookeeper 会话超时检查时间 间隔，默认 tickTime
+
+emmm，谢邀，人看麻了，下次一定
