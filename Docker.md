@@ -124,3 +124,9 @@ docker run -p 8081:8081 --name mybokev1.0 -d mybokev1.0
 成功~，mysql redis也可以用镜像，要用的话application.yml配置里记得把所有软件ip更改为镜像内网ip，经济实力雄厚的可以用云服务器👍云mysql 30/年
 
 含mysql,redis,es等等中间件的springboot一键部署https://juejin.cn/post/6844904142620622862
+
+```bash
+docker images 
+docker rmi xxxid
+```
+
