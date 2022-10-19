@@ -1,5 +1,55 @@
 # Vue
 
+##### npm指令集
+
+1、升级Node.js版本：
+
+清理npm缓存：npm cache clean -f
+安装版本管理工具：npm install -g n
+升级到最新的版本：n latest（最新版本）n stable（最新稳定版本）
+
+2、降低cnpm的版本：
+
+删除已安装的cnpm版本：npm uninstall -g cnpm
+安装低版本cnpm：npm install cnpm@7.1.0 -g --registry=https://registry.npm.taobao.org
+
+#### nvm使用
+
+使用nvm安装node
+选择自己要安装的版本
+
+  nvm install 12.17.0
+注意：会存在下载失败此时**设置淘宝镜像**下载
+修改 settings.txt，在安装的目录下找到settings.txt文件，打开后加上
+	node_mirror: https://npm.taobao.org/mirrors/node/
+	npm_mirror: https://npm.taobao.org/mirrors/npm/
+使用nvm切换node不同版本
+查看已安装的nodejs版本
+
+nvm ls
+确认使用的版本（须以管理员身份打开cmd，否则会失败）
+
+nvm use 12.17.0
+查看当前使用的版本
+
+nvm current
+卸载12.17.0
+
+nvm uninstall 12.17.0
+
+```bash
+#配置cnpm
+npm install -g cnpm --registry=https://registry.npm.taobao.org
+#镜像
+npm config set registry https://registry.npm.taobao.org
+#原
+npm config set registry https://registry.npmjs.org/
+```
+
+
+
+
+
 MVVM: Model View ViewMoedl
 
 页面与数据相分离
