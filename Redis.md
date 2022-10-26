@@ -1087,6 +1087,26 @@ Map<Object, Object> entries = redisTemplate.opsForHash().entries("k1");
 
 ```
 
+### SpringBoot整合RedisTemplate
+
+基本也就是
+
+```java
+redisTemplate.opsforValue().set(key,value);
+						   .get(key);
+redisTemplate.opsforList().leftpushAll(key,list);
+						  .rightPop(key);
+						  .range(key,0,-1);
+redisTemplate.opsforSet().add(key,Set/List<T>);
+redisTemplate.opsforZSet().add(key,T,T.getXX());
+						  .range(key,0L,size);
+						  .reverseRange(key,0L,size);
+redisTemplate.opsforHash().entries(key);
+						  .put(key,T.getXX(),T);
+```
+
+https://blog.csdn.net/weixin_44012027/article/details/110505689
+
 ### Redis如何实现key过期
 
 **惰性过期 + 随机读取 key触碰过期**
