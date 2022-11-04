@@ -926,3 +926,12 @@ https://blog.csdn.net/CXY_QIQI/article/details/124822976
 
 ## 关于Explain
 
+范例：
+
+![image-20221104111100922](E:\IDEA\Docs\文档\photo\image-20221104111100922.png)
+
+字段描述
+
+- id:
+
+mysql:explain 官方文档https://dev.mysql.com/doc/refman/8.0/en/explain-output.html
