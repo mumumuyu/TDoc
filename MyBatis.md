@@ -2,6 +2,12 @@
 
 ## 实际使用
 
+数据并不是完全一致，多用like哈哈
+
+```xml
+route_name like concat('%', #{routeName},'%')
+```
+
 一般，对于一个类 or 表的CRUD
 
 ```XML
