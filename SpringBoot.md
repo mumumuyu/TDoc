@@ -73,6 +73,176 @@ Spring-Boot-DevTools 热部署
 - 内嵌式容器简化Web项目
 - 没有冗余代码生成和XML配置的要求
 
+### 全局异常
+
+总体来说两种实现方式：
+
+- BasicErrorController，类似于web.xml配置错误页面，容器级别
+
+- ControllerAdvice （+ExceptionHandler 异常处理），使用切面增强 ，对Controller进行切面环绕的，而具体的业务织入方式则是通过结合其他的注解来实现的。@ControllerAdvice是在类上声明的注解，其用法主要有三点：
+
+  1.全局异常处理：结合方法型注解@ExceptionHandler，用于捕获Controller中抛出的指定类型的异常，从而达到不同类型的异常区别处理的目的。
+
+  2.全局数据预处理：结合方法型注解@InitBinder，用于request中自定义参数解析方式进行注册，从而达到自定义指定格式参数的目的。
+
+  3.全局数据绑定：结合方法型注解@ModelAttribute，表示其注解的方法将会在目标Controller方法执行之前执行。
+
+1️⃣.自定义一个bean，实现ErrorController接口，那么默认的错误处理机制将不再生效。
+
+2️⃣.自定义一个bean，继承BasicErrorController类，使用一部分现成的功能，自己也可以添加新的public方法，使用@RequestMapping及其produces属性指定新的地址映射。
+
+3️⃣.自定义一个ErrorAttribute类型的bean，那么还是默认的两种响应方式，只不过改变了内容项而已。
+
+先说下第三种方法，其实查看BasicErrorController源码，响应结果不论是html还是json，内容源都是ErrorAttribute。第三种方法只能改变内容，却改变不了格式，特别是html页面的样式。
+
+其实指南上只是轻描淡写了几种方法，没有很好的示例，不知道是不是指南的作者认为Spring Boot默认的错误处理机制已经很适用了。无论第一种还是第二种办法，都需要你看下BasicErrorController的继承体系及实现，因为BasicErrorController也是实现了ErrorController。
+
+采用第一种方式你可以具有完全的控制权，你可以摒弃默认的“Whitelabel Error Page”，指定自己的视图及视图样式，你可以指定响应的Json格式内容等等，因为BasicErrorController不再起作用，可以参考这里。
+
+由于笔者参照了BasicErrorController的源码，感觉第二种方法可能更简便些，所以实现了第二种方法。第二种方法的思路其实就是你可以通过继承，利用BasicErrorController已有的功能，或者进行扩展。
+
+那么如何覆盖默认的处理行为呢（虽然是自定义bean，但因为是继承，没有覆盖的话还是会采用默认的处理行为）？大致有两种思路。
+
+按照指南上所述，你可以新建public方法，使用@RequestMapping及其produces属性，例如@RequestMapping(produces="application/json")，那么只要请求头中包含“Accept: application/json”，则会映射到你的方法进行处理。看到这儿你可能会疑惑，why？还是建议你先看下BasicErrorController源码。
+因为是继承，所以对BasicErrorController默认两种错误处理方式的方法进行override。
+笔者希望完全覆盖及可控，所以选择了第二种思路。笔者自定义了MyErrorController，继承于BasicErrorController，注意一定要添加@Controller，不然Spring无法感知自定义的bean，继承于BasicErrorController还是会起作用！
+
+其他
+Spring Boot提供的ErrorController是一种全局性的容错机制。你还可以使用SpringMVC提供的@ControllerAdvice。
+
+如字面意思，@ControllerAdvice是切面技术的应用，允许你对Controller中抛出的某个或某些异常进行捕获并响应输出。用法如下：
+
+```java
+@ControllerAdvice
+public class DefaultExceptionHandler  {
+private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExceptionHandler.class); //日志记录器
+ 
+@ExceptionHandler({MissingServletRequestParameterException.class, TypeMismatchException.class, IllegalArgumentException.class, IllegalStateException.class})
+@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+@ResponseBody
+public JsonResult conversionErrorHandler(Exception ex) {
+    //记录日志
+    LOGGER.error("参数异常捕获", ex);
+ 
+    return new JsonResult(false, ErrorCode2Msg.getMessage(10004));
+}
+```
+}
+以往使用@ControllerAdvice捕获应用级别的异常，使用web.xml中的error-page配置处理容器级别的报错。假设定义的过滤器抛出的异常，@ControllerAdvice是无法处理的（假设定义的过滤器抛出的异常，@ControllerAdvice是无法处理的）。
+
+改用Spring Boot后，@ControllerAdvice没有捕获的异常，ErrorController会帮你“捡起来”。
+
+```java
+package com.syc.boot.handler;
+ 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+ 
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+ 
+/**
+ * ControllerAdvice注解:控制器增强,
+ * 用来使@ExceptionHandler、@InitBinder、@ModelAttribute注解的方法应用到
+ * 所有的 @RequestMapping注解的方法。
+ */
+@Slf4j
+@ControllerAdvice
+public class GlobalExceptionHandler {
+ 
+    /**
+     * 拦截所有Exception类的异常
+     */
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public Map<String, Object> exceptionHandler(Exception e) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("respCode", "1000");
+        result.put("respMsg", e.getMessage());
+        return result;
+    }
+ 
+    /**
+     * 400 请求参数封装到bean时 类型转换错误
+     * 400 (Bad Request)
+     */
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class,
+            MissingServletRequestParameterException.class})
+    @ResponseBody
+    public Map<String, Object> handleRequestParamFormatError(Exception ex) {
+        log.error("handleRequestParamFormatError() bad request ex:{}", ex.getLocalizedMessage());
+        Map<String, Object> result = new HashMap<>();
+        result.put("respCode", "400");
+        result.put("respMsg", ex.getLocalizedMessage());
+        return result;
+    }
+ 
+    /**
+     * 404 (Not Found)
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseBody
+    public Map<String, Object> handleNoHandlerFoundException(NoHandlerFoundException ex, WebRequest request) {
+        log.error("handleNoHandlerFoundException() {}{}{} ", request, " exception message:", ex.getLocalizedMessage());
+        Map<String, Object> result = new HashMap<>();
+        result.put("respCode", "404");
+        result.put("respMsg", ex.getLocalizedMessage());
+        return result;
+    }
+ 
+    /**
+     * 405 (Method Not Allowed)
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    @ResponseBody
+    public Map<String, Object> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex) {
+        log.error("handleHttpRequestMethodNotSupportedException() request Method Not Allowed(405) exception message:{}", ex.getLocalizedMessage());
+        Map<String, Object> result = new HashMap<>();
+        result.put("respCode", "405");
+        result.put("respMsg", ex.getLocalizedMessage());
+        return result;
+    }
+ 
+ 
+    //跳转到自定义的错误处理页面
+    //由于工作中都是才有前后端分离开发模式，所以一般上都没有直接返回资源页的需求了，
+    // 一般上都是返回固定的响应格式，如respCode、respMsg、data，
+    // 前端通过判断respCode的值进行业务判断，是弹窗还是跳转页面。
+ 
+    //在校验不通过时，返回的异常信息是不友好的，此时可利用统一异常处理，
+    // 对校验异常进行特殊处理，特别说明下，对于异常处理类,
+    // 共有以下几种情况(被@RequestBody和@RequestParam注解的请求实体，校验异常类是不同的)
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public Map<String, Object> handleBindException(MethodArgumentNotValidException ex) {
+//        FieldError fieldError = ex.getBindingResult().getFieldError();
+//        log.info("参数校验异常:{}({})", fieldError.getDefaultMessage(), fieldError.getField());
+//        Map<String, Object> result = new HashMap<>();
+//        result.put("respCode", "1001");
+//        result.put("respMsg", fieldError.getDefaultMessage());
+//        return result;
+//    }
+ 
+}
+```
+
+
+
+
+
 ### YML
 
 #### yml配置优先级顺序
