@@ -90,6 +90,115 @@ BootStrap-->Extension class Loader --> Appliacation class Loader
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210621224455814.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzQ2MTUzOTQ5,size_16,color_FFFFFF,t_70#pic_center)
 
+##### 打破保护机制
+
+###### 使用Thread的contextClassLoader
+
+JDK中利用线程的contextClassloader去打破双亲委派模型的例子就是Serviceloader， Serviceloader是JDK里面全称是Service Provider Interface，是实现服务提供接口，实现插件的方式，例如JDBC的Driver就是使用JDK的SPI，具体实现是适配不同的数据库，由于Driver是在rt.jar是由BootstrapClassloader加载，而接口实现类是由第三方的jar包提供,所有BootstrapClassLoader就没有办法就在，所以JDK做了一个妥协, 委派给当前线程的contextloader去加载实现类
+下面是ServiceLoader的load方法，可以看出是获取当亲线程的contextClassloader去加载的接口的实现类。当前主线程类加载器默认是AppClassloader加载器加载。这样就是违反了双亲委派模型.
+
+public static <S> ServiceLoader<S> load(Class<S> service) {
+    ClassLoader cl = Thread.currentThread().getContextClassLoader();
+    return ServiceLoader.load(service, cl);
+}
+
+###### 并行类加载机制
+
+前面介绍Classloader的抽象类中loadClass方法，加载开始时，需要获取类全名的锁, 如果用到了并行类加载机制,就会用到. 如果需要使用并行类加载机制,只有再自定义的类加载加一个静态代码块中，增加下面一行。
+
+static {
+    ClassLoader.registerAsParallelCapable();
+}
+ClassLoader#registerAsParallelCapable
+
+将自定义继承ClassLoader的类注册到ParallelLoaders的Set集合中.
+protected static boolean registerAsParallelCapable() {
+    Class<? extends ClassLoader> callerClass =
+        Reflection.getCallerClass().asSubclass(ClassLoader.class);
+    return ParallelLoaders.register(callerClass);
+}
+ParallelLoaders类中其实就是维护一个Classloader实现类的Set，其中元素都是调用registerAsParallelCapable注册为并行类加载的classloader，
+
+private static class ParallelLoaders {
+    private ParallelLoaders() {}
+
+    // the set of parallel capable loader types
+    private static final Set<Class<? extends ClassLoader>> loaderTypes =
+        Collections.newSetFromMap(
+            new WeakHashMap<Class<? extends ClassLoader>, Boolean>());
+    static {
+        synchronized (loaderTypes) { loaderTypes.add(ClassLoader.class); }
+    }
+     
+    /**
+     * Registers the given class loader type as parallel capabale.
+     * Returns {@code true} is successfully registered; {@code false} if
+     * loader's super class is not registered.
+     */
+    static boolean register(Class<? extends ClassLoader> c) {
+        synchronized (loaderTypes) {
+            if (loaderTypes.contains(c.getSuperclass())) {
+                // register the class loader as parallel capable
+                // if and only if all of its super classes are.
+                // Note: given current classloading sequence, if
+                // the immediate super class is parallel capable,
+                // all the super classes higher up must be too.
+                loaderTypes.add(c);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+     
+    /**
+     * Returns {@code true} if the given class loader type is
+     * registered as parallel capable.
+     */
+    static boolean isRegistered(Class<? extends ClassLoader> c) {
+        synchronized (loaderTypes) {
+            return loaderTypes.contains(c);
+        }
+    }
+}
+
+Classloaer构造函数中，
+
+如果Classloader注册过并行类加载器，则创建parallelLockMap的锁的HashMap,
+private ClassLoader(Void unused, ClassLoader parent) {
+    this.parent = parent;
+    if (ParallelLoaders.isRegistered(this.getClass())) {
+        parallelLockMap = new ConcurrentHashMap<>();
+        package2certs = new ConcurrentHashMap<>();
+        domains =
+            Collections.synchronizedSet(new HashSet<ProtectionDomain>());
+        assertionLock = new Object();
+    } else {
+        // no finer-grained lock; lock on the classloader instance
+        parallelLockMap = null;
+        package2certs = new Hashtable<>();
+        domains = new HashSet<>();
+        assertionLock = this;
+    }
+}
+
+###### Classloaer#getClassLoadingLock
+
+在loadClass中获取类锁中，会判断parallelLockMap不为空，会创建一个Object对象作为这个classloader类的锁，然后放入hashMap中.
+这样进行类加载过程，就synchonized锁就不是锁Classloader实例的this指针，而是Hashmap中获取加载类全名的锁，这样不同类全名就可以并行加载,这样减少了锁的粒度，提升类加载的速度.
+
+protected Object getClassLoadingLock(String className) {
+    Object lock = this;
+    if (parallelLockMap != null) {
+        Object newLock = new Object();
+        lock = parallelLockMap.putIfAbsent(className, newLock);
+        if (lock == null) {
+            lock = newLock;
+        }
+    }
+    return lock;
+}
+
 ##### 5.沙箱安全机制  防止源码被破坏
 
 就是进行权限，类加载器在加载类时会对字节码进行校验，授予对应可操作的权限，当然核心类不需要。
