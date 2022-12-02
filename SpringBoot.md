@@ -617,6 +617,10 @@ http.csrf().disable();//关闭csrf功能:跨站请求伪造,默认只能通过po
         http.rememberMe().rememberMeParameter("remember");
 ```
 
+```java
+.headers().frameOptions().disable();//boot监控相关页面在Vue配置需要，解决iframe嵌套问题
+```
+
 ### shiro
 
 ###### 依赖
@@ -1123,3 +1127,10 @@ service层
 
 RequestAttribute就是可以拿预先存在的数据Attribute比如可以request.setAttribute("xxx","value")，可以被用于访问由过滤器或拦截器创建的、预先存在的请求属性
 
+### 测试类
+
+目的:让测试产生的数据不提交事务(即回滚),不做脏数据
+1 测试类上加注解@Transactional 
+2 @Transactional相当于这两个注解 @Transactional@Rollback(true) → 即默认回滚
+
+备注:@SpringBootTest和@Transactional组合在一起,才默认回滚
