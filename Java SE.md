@@ -2580,3 +2580,39 @@ if( !isNum.matches() ){
 | \*nm*         | 标识一个八进制转义码或反向引用。如果 \*nm* 前面至少有 *nm* 个捕获子表达式，那么 *nm* 是反向引用。如果 \*nm* 前面至少有 *n* 个捕获，则 *n* 是反向引用，后面跟有字符 *m*。如果两种前面的情况都不存在，则 \*nm* 匹配八进制值 *nm*，其中 *n* 和 *m* 是八进制数字 (0-7)。 |
 | \nml          | 当 *n* 是八进制数 (0-3)，*m* 和 *l* 是八进制数 (0-7) 时，匹配八进制转义码 *nml*。 |
 | \u*n*         | 匹配 *n*，其中 *n* 是以四位十六进制数表示的 Unicode 字符。例如，\u00A9 匹配版权符号 (©)。 |
+
+菜单列表=》菜单树
+
+```java
+	/**
+     * 将菜单列表，构建成菜单树
+     *
+     * @param menuList 菜单列表
+     * @return 菜单树
+     */
+    default List<AuthMenuRespVO> buildMenuTree(List<MenuDO> menuList) {
+        // 排序，保证菜单的有序性
+        menuList.sort(Comparator.comparing(MenuDO::getSort));
+        // 构建菜单树
+        // 使用 LinkedHashMap 的原因，是为了排序 。实际也可以用 Stream API ，就是太丑了。
+        Map<Long, AuthMenuRespVO> treeNodeMap = new LinkedHashMap<>();
+        menuList.forEach(menu -> treeNodeMap.put(menu.getId(), AuthConvert.INSTANCE.convertTreeNode(menu)));
+        // 处理父子关系
+        treeNodeMap.values().stream().filter(node -> !node.getParentId().equals(MenuIdEnum.ROOT.getId())).forEach(childNode -> {
+            // 获得父节点
+            AuthMenuRespVO parentNode = treeNodeMap.get(childNode.getParentId());
+            if (parentNode == null) {
+                LoggerFactory.getLogger(getClass()).error("[buildRouterTree][resource({}) 找不到父资源({})]",
+                    childNode.getId(), childNode.getParentId());
+                return;
+            }
+            // 将自己添加到父节点中
+            if (parentNode.getChildren() == null) {
+                parentNode.setChildren(new ArrayList<>());
+            }
+            parentNode.getChildren().add(childNode);
+        });
+        // 获得到所有的根节点
+        return CollectionUtils.filterList(treeNodeMap.values(), node -> MenuIdEnum.ROOT.getId().equals(node.getParentId()));
+    }
+```
